@@ -4,7 +4,7 @@ export const STEPS = [
   { label: "Scan", href: "/scan", ready: true },
   { label: "Seal", href: "/seal", ready: true },
   { label: "Upgrade NEAR", href: "/upgrade", ready: false },
-  { label: "Watch", href: "/watch", ready: false },
+  { label: "Watch", href: "/watch", ready: true },
 ] as const;
 
 /** The four-step progress bar shown at the top of every screen after the landing page. */

@@ -37,7 +37,8 @@ This table is updated as work lands. Anything not marked built is not claimed.
 | Seal into the OutLayer vault, released by the watchman | planned | |
 | Seal, Ethereum and BNB Chain: USDC and USDT transfers first, then a sweep of the native coin, nonces in sequence, high fee caps; signed offline (Foundry `cast mktx`); Lifeboat checks the signer, chain, nonces, recipient and fees | built, tested with real signatures | [`lib/evm/rescue.ts`](lib/evm/rescue.ts), [`app/api/rescue/evm`](app/api/rescue/evm), [`components/EvmEscape.tsx`](components/EvmEscape.tsx) |
 | Upgrade NEAR: one-click ML-DSA-65 key | planned | |
-| Watchman: canary wallets, NEAR AI Cloud judgement, release | planned | |
+| Watchman: 60 canaries (unspent 2009 block rewards paid to bare public keys, 3,000 BTC), checked live; rules raise watch, alarm and release levels; NEAR AI Cloud gives a second opinion on an alarm but can never block a release or cause one alone; Watch screen with a labelled simulated attack | built, tested | [`lib/watchman`](lib/watchman), [`data/canaries.json`](data/canaries.json), [`scripts/find-canaries.mjs`](scripts/find-canaries.mjs), [`app/api/watch/status`](app/api/watch/status), [`components/Watch.tsx`](components/Watch.tsx) |
+| Watchman releasing sealed escapes from the vault | planned (needs the OutLayer vault) | |
 | Simulated attack on testnet, end to end | planned | |
 
 ## How the exposure check works
@@ -87,11 +88,25 @@ Browser wallets such as MetaMask cannot sign a transaction without sending it, w
 
 **On Ethereum, a little dust stays behind.** The sweep reserves the full fee cap, and whatever the fee doesn't use stays in the old address. On BNB Chain the sweep empties the address exactly.
 
+## The watchman
+
+**What it watches.** The canaries are the block rewards from Bitcoin blocks 1 to 61 (block 9's has been spent), mined in January 2009. They were paid to bare public keys, so their keys have been public for 17 years, and none has ever moved. If a quantum computer can derive private keys, these are the easiest coins to take. `scripts/find-canaries.mjs` rebuilds the list from mempool.space.
+
+**How it decides:**
+
+1. **One moves in a day:** watch closely. Owners sometimes move old coins.
+2. **Three move in a day:** raise the alarm and ask a model on NEAR AI Cloud whether the moves look like an attack. A "yes" with at least 70% confidence releases.
+3. **Eight move in a day:** release, whatever the judgement says.
+
+**What the AI can and can't do.** It sees counts and fees, never addresses. It can confirm an alarm, but it can't start one and it can't block a release.
+
+**Try it.** Open `/watch` to see the live state, checked against mempool.space every minute. Press **Show a simulated attack** to see eight canaries move: the screen says plainly that the attack is simulated, and nothing is released.
+
 ## Run it
 
 ```bash
 npm install
-npm test            # 56 tests, offline
+npm test            # 72 tests, offline
 npm run dev         # http://localhost:3000
 npm run spike:mldsa # make an ML-DSA-65 key locally, sign and verify
 ```

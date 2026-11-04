@@ -174,3 +174,55 @@ export async function evmHasSent(address: string, chain: "ethereum" | "bsc", net
   const nonce = await rpc(f, evmUrl(chain, network), "eth_getTransactionCount", [address, "latest"]);
   return BigInt(nonce as string) > BigInt(0);
 }
+
+// ---------- Watchman lookups ----------
+
+interface Outspend {
+  spent: boolean;
+  txid?: string;
+  status?: { confirmed: boolean; block_height?: number };
+}
+
+interface EsploraTx {
+  fee: number;
+  weight: number;
+  vout: { scriptpubkey_address?: string }[];
+}
+
+/** Current state of each canary: still, or spent (when, where to, at what fee). */
+export async function canaryStates(
+  canaries: { id: string; txid: string; vout: number }[],
+  network: "mainnet" | "testnet",
+  f: Fetch = fetch,
+) {
+  const base = ENDPOINTS.bitcoin[network];
+  const tip = Number(await getText(f, `${base}/blocks/tip/height`));
+  const states = await mapLimit(canaries, 6, async (c) => {
+      const o = (await getJson(f, `${base}/tx/${c.txid}/outspend/${c.vout}`)) as Outspend;
+      if (!o.spent || !o.txid) return { id: c.id, spent: false };
+      const tx = (await getJson(f, `${base}/tx/${o.txid}`)) as EsploraTx;
+      return {
+        id: c.id,
+        spent: true,
+        spendTxid: o.txid,
+        spendHeight: o.status?.confirmed ? (o.status.block_height ?? null) : null,
+        destinations: tx.vout.map((v) => v.scriptpubkey_address).filter((a): a is string => !!a),
+        feeRate: Math.round((tx.fee / (tx.weight / 4)) * 10) / 10,
+      };
+  });
+  return { tip, states };
+}
+
+/** Run `fn` over items with at most `limit` in flight, so public APIs aren't flooded. */
+export async function mapLimit<T, R>(items: T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> {
+  const out = new Array<R>(items.length);
+  let next = 0;
+  const worker = async () => {
+    while (next < items.length) {
+      const i = next++;
+      out[i] = await fn(items[i]);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+  return out;
+}

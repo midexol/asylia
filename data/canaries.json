@@ -1,0 +1,426 @@
+{
+ "about": "Unspent 2009 Bitcoin block rewards paid to bare public keys (P2PK). Found by scripts/find-canaries.mjs on 2026-11-04.",
+ "network": "mainnet",
+ "canaries": [
+  {
+   "id": "0e3e2357e806b6cdb1f70b54c3a3a17b6714ee1f0e68bebb44a74b1efd512098:0",
+   "height": 1,
+   "txid": "0e3e2357e806b6cdb1f70b54c3a3a17b6714ee1f0e68bebb44a74b1efd512098",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "9b0fc92260312ce44e74ef369f5c66bbb85848f2eddd5a7a1cde251e54ccfdd5:0",
+   "height": 2,
+   "txid": "9b0fc92260312ce44e74ef369f5c66bbb85848f2eddd5a7a1cde251e54ccfdd5",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "999e1c837c76a1b7fbb7e57baf87b309960f5ffefbf2a9b95dd890602272f644:0",
+   "height": 3,
+   "txid": "999e1c837c76a1b7fbb7e57baf87b309960f5ffefbf2a9b95dd890602272f644",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "df2b060fa2e5e9c8ed5eaf6a45c13753ec8c63282b2688322eba40cd98ea067a:0",
+   "height": 4,
+   "txid": "df2b060fa2e5e9c8ed5eaf6a45c13753ec8c63282b2688322eba40cd98ea067a",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "63522845d294ee9b0188ae5cac91bf389a0c3723f084ca1025e7d9cdfe481ce1:0",
+   "height": 5,
+   "txid": "63522845d294ee9b0188ae5cac91bf389a0c3723f084ca1025e7d9cdfe481ce1",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "20251a76e64e920e58291a30d4b212939aae976baca40e70818ceaa596fb9d37:0",
+   "height": 6,
+   "txid": "20251a76e64e920e58291a30d4b212939aae976baca40e70818ceaa596fb9d37",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "8aa673bc752f2851fd645d6a0a92917e967083007d9c1684f9423b100540673f:0",
+   "height": 7,
+   "txid": "8aa673bc752f2851fd645d6a0a92917e967083007d9c1684f9423b100540673f",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "a6f7f1c0dad0f2eb6b13c4f33de664b1b0e9f22efad5994a6d5b6086d85e85e3:0",
+   "height": 8,
+   "txid": "a6f7f1c0dad0f2eb6b13c4f33de664b1b0e9f22efad5994a6d5b6086d85e85e3",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "d3ad39fa52a89997ac7381c95eeffeaf40b66af7a57e9eba144be0a175a12b11:0",
+   "height": 10,
+   "txid": "d3ad39fa52a89997ac7381c95eeffeaf40b66af7a57e9eba144be0a175a12b11",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "f8325d8f7fa5d658ea143629288d0530d2710dc9193ddc067439de803c37066e:0",
+   "height": 11,
+   "txid": "f8325d8f7fa5d658ea143629288d0530d2710dc9193ddc067439de803c37066e",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "3b96bb7e197ef276b85131afd4a09c059cc368133a26ca04ebffb0ab4f75c8b8:0",
+   "height": 12,
+   "txid": "3b96bb7e197ef276b85131afd4a09c059cc368133a26ca04ebffb0ab4f75c8b8",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "9962d5c704ec27243364cbe9d384808feeac1c15c35ac790dffd1e929829b271:0",
+   "height": 13,
+   "txid": "9962d5c704ec27243364cbe9d384808feeac1c15c35ac790dffd1e929829b271",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "e1afd89295b68bc5247fe0ca2885dd4b8818d7ce430faa615067d7bab8640156:0",
+   "height": 14,
+   "txid": "e1afd89295b68bc5247fe0ca2885dd4b8818d7ce430faa615067d7bab8640156",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "50748b7a193a0b23f1e9494b51131d2f954cc6cf4792bacc69d207d16002080d:0",
+   "height": 15,
+   "txid": "50748b7a193a0b23f1e9494b51131d2f954cc6cf4792bacc69d207d16002080d",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "e79fc1dad370e628614702f048edc8e98829cf8ea8f6615db19f992b1be92e44:0",
+   "height": 16,
+   "txid": "e79fc1dad370e628614702f048edc8e98829cf8ea8f6615db19f992b1be92e44",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "a3e0b7558e67f5cadd4a3166912cbf6f930044124358ef3a9afd885ac391625d:0",
+   "height": 17,
+   "txid": "a3e0b7558e67f5cadd4a3166912cbf6f930044124358ef3a9afd885ac391625d",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "f925f26deb2dc4696be8782ab7ad9493d04721b28ee69a09d7dfca51b863ca23:0",
+   "height": 18,
+   "txid": "f925f26deb2dc4696be8782ab7ad9493d04721b28ee69a09d7dfca51b863ca23",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "9b9e461221e5284f3bfe5656efdc8c7cc633b2f1beef54a86316bf2ae3a3e230:0",
+   "height": 19,
+   "txid": "9b9e461221e5284f3bfe5656efdc8c7cc633b2f1beef54a86316bf2ae3a3e230",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "ee1afca2d1130676503a6db5d6a77075b2bf71382cfdf99231f89717b5257b5b:0",
+   "height": 20,
+   "txid": "ee1afca2d1130676503a6db5d6a77075b2bf71382cfdf99231f89717b5257b5b",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "e0175970efb4417950921bfcba2a3a1e88c007c21232ff706009cc70b89210b4:0",
+   "height": 21,
+   "txid": "e0175970efb4417950921bfcba2a3a1e88c007c21232ff706009cc70b89210b4",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "9e2eaf1d7e5178a2d116f331c340f1f7fd6de7540783ac36a7054fe9a4d64943:0",
+   "height": 22,
+   "txid": "9e2eaf1d7e5178a2d116f331c340f1f7fd6de7540783ac36a7054fe9a4d64943",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "e1cf3476234d8446653ad52a8939ed792003eefdcd0e897319ab9d2cb4c14c8c:0",
+   "height": 23,
+   "txid": "e1cf3476234d8446653ad52a8939ed792003eefdcd0e897319ab9d2cb4c14c8c",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "43c39b8b3728c6cb26fae0fc18803ca6cf43e15fde218e3dfbd54e633cf6753e:0",
+   "height": 24,
+   "txid": "43c39b8b3728c6cb26fae0fc18803ca6cf43e15fde218e3dfbd54e633cf6753e",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "9b0f52332d7d013b49016416c4818b5abb80b01ca526b7b813830348ad2321be:0",
+   "height": 25,
+   "txid": "9b0f52332d7d013b49016416c4818b5abb80b01ca526b7b813830348ad2321be",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "67c1e8143bb6ad221a4ce77d6c8be68f2e25e0743f51b2db1a7b22bab59014dc:0",
+   "height": 26,
+   "txid": "67c1e8143bb6ad221a4ce77d6c8be68f2e25e0743f51b2db1a7b22bab59014dc",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "230cf03a6ce420eaa42e3c64feebb47920f3470efb4323b4574b4b6e5a004f65:0",
+   "height": 27,
+   "txid": "230cf03a6ce420eaa42e3c64feebb47920f3470efb4323b4574b4b6e5a004f65",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "f399cb6c5bed7bb36d44f361c29dd5ecf12deba163470d8835b7ba0c4ed8aebd:0",
+   "height": 28,
+   "txid": "f399cb6c5bed7bb36d44f361c29dd5ecf12deba163470d8835b7ba0c4ed8aebd",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "c361e2f4581f035dd58b99788347884e046e47b4c17ec347344ff8b24cd377ec:0",
+   "height": 29,
+   "txid": "c361e2f4581f035dd58b99788347884e046e47b4c17ec347344ff8b24cd377ec",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "f5e26c8b82401c585235c572ba8265f16f7d9304ed8e31c198eab571754f5331:0",
+   "height": 30,
+   "txid": "f5e26c8b82401c585235c572ba8265f16f7d9304ed8e31c198eab571754f5331",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "86b33edba8ff663b0f73ef487e4433f34d26ef91de15659d2cc09594d27b52cb:0",
+   "height": 31,
+   "txid": "86b33edba8ff663b0f73ef487e4433f34d26ef91de15659d2cc09594d27b52cb",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "2b9905f06583c01454f10f720b5709e3b667c9dd3d9efc423c97b7e70afdc0c9:0",
+   "height": 32,
+   "txid": "2b9905f06583c01454f10f720b5709e3b667c9dd3d9efc423c97b7e70afdc0c9",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "bdeaa0089cd84670da5e6385f0185c2d7978bf57a1aa5540d3ff3b3eabaa1210:0",
+   "height": 33,
+   "txid": "bdeaa0089cd84670da5e6385f0185c2d7978bf57a1aa5540d3ff3b3eabaa1210",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "223b0620a8f1c1f23a2ebf8032ed11321b921017d01974e74cddd651319b5474:0",
+   "height": 34,
+   "txid": "223b0620a8f1c1f23a2ebf8032ed11321b921017d01974e74cddd651319b5474",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "852b1997ed935ba638078998e2d15bc8a91b8ad232e2d988e22c969eba3bafe0:0",
+   "height": 35,
+   "txid": "852b1997ed935ba638078998e2d15bc8a91b8ad232e2d988e22c969eba3bafe0",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "d05d256fbd5845b30039e37d48215788a4e438249048c47ddb9c83cd927d4d5a:0",
+   "height": 36,
+   "txid": "d05d256fbd5845b30039e37d48215788a4e438249048c47ddb9c83cd927d4d5a",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "6d344eb5d67ed329a1c1d7603bba4b85d5916435b49f7a585bb370b76820287d:0",
+   "height": 37,
+   "txid": "6d344eb5d67ed329a1c1d7603bba4b85d5916435b49f7a585bb370b76820287d",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "e690daeb9f73d29d8a22cb4b5ec29970e9b32283d4376adeaad8691ccb449a68:0",
+   "height": 38,
+   "txid": "e690daeb9f73d29d8a22cb4b5ec29970e9b32283d4376adeaad8691ccb449a68",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "1484c18ba443b13851098597d8cb6d49d5983eab63c53d6b0dcc565612e7ca6b:0",
+   "height": 39,
+   "txid": "1484c18ba443b13851098597d8cb6d49d5983eab63c53d6b0dcc565612e7ca6b",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "04391286b3aefbb5df4cdb515ac7fce7942525fa602e1d7757e90a4fd41a1e20:0",
+   "height": 40,
+   "txid": "04391286b3aefbb5df4cdb515ac7fce7942525fa602e1d7757e90a4fd41a1e20",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "9efa6cb3b8cca3c9387144f397f80e7b4bc2dd86026fdd308625a2e100a08d5a:0",
+   "height": 41,
+   "txid": "9efa6cb3b8cca3c9387144f397f80e7b4bc2dd86026fdd308625a2e100a08d5a",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "27c4d937dca276fb2b61e579902e8a876fd5b5abc17590410ced02d5a9f8e483:0",
+   "height": 42,
+   "txid": "27c4d937dca276fb2b61e579902e8a876fd5b5abc17590410ced02d5a9f8e483",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "2f5c03ce19e9a855ac93087a1b68fe6592bcf4bd7cbb9c1ef264d886a785894e:0",
+   "height": 43,
+   "txid": "2f5c03ce19e9a855ac93087a1b68fe6592bcf4bd7cbb9c1ef264d886a785894e",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "439aee1e1aa6923ad61c1990459f88de1faa3e18b4ee125f99b94b82e1e0af5f:0",
+   "height": 44,
+   "txid": "439aee1e1aa6923ad61c1990459f88de1faa3e18b4ee125f99b94b82e1e0af5f",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "f69778085f1e78a1ea1cfcfe3b61ffb5c99870f5ae382e41ec43cf165d66a6d9:0",
+   "height": 45,
+   "txid": "f69778085f1e78a1ea1cfcfe3b61ffb5c99870f5ae382e41ec43cf165d66a6d9",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "ddd4d06365155ab4caaaee552fb3d8643207bd06efe14f920698a6dd4eb22ffa:0",
+   "height": 46,
+   "txid": "ddd4d06365155ab4caaaee552fb3d8643207bd06efe14f920698a6dd4eb22ffa",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "d17b9c9c609309049dfb9005edd7011f02d7875ca7dab6effddf4648bb70eff6:0",
+   "height": 47,
+   "txid": "d17b9c9c609309049dfb9005edd7011f02d7875ca7dab6effddf4648bb70eff6",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "32edede0b7d0c37340a665de057f418df634452f6bb80dcb8a5ff0aeddf1158a:0",
+   "height": 48,
+   "txid": "32edede0b7d0c37340a665de057f418df634452f6bb80dcb8a5ff0aeddf1158a",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "194c9715279d8626bc66f2b6552f2ae67b3df3a00b88553245b12bffffad5b59:0",
+   "height": 49,
+   "txid": "194c9715279d8626bc66f2b6552f2ae67b3df3a00b88553245b12bffffad5b59",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "540a7e54fd64478554519f1b2d643ecc888c5030631487f9cfc530b71d281309:0",
+   "height": 50,
+   "txid": "540a7e54fd64478554519f1b2d643ecc888c5030631487f9cfc530b71d281309",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "a09c89d2a31440658a42ec97aeee0d36b01529e45b315922e2aa2955334d1821:0",
+   "height": 51,
+   "txid": "a09c89d2a31440658a42ec97aeee0d36b01529e45b315922e2aa2955334d1821",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "b3f978e6ee5e91662af30a634b3f3268c6f5d34aac1eb54e6cc9535026f5084f:0",
+   "height": 52,
+   "txid": "b3f978e6ee5e91662af30a634b3f3268c6f5d34aac1eb54e6cc9535026f5084f",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "3c6f58905f06a9fe9b4313a88827c43dbfb0156fcc3b17bb311d51e8be6746f5:0",
+   "height": 53,
+   "txid": "3c6f58905f06a9fe9b4313a88827c43dbfb0156fcc3b17bb311d51e8be6746f5",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "d3dc9be5d58809579e56cdd64e78257ecd24e2726cf26ef0a698f4e5c07670b5:0",
+   "height": 54,
+   "txid": "d3dc9be5d58809579e56cdd64e78257ecd24e2726cf26ef0a698f4e5c07670b5",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "19521c62482ac299b37c8ae4eab67abd150e3c21dc66b7e2b0919444769ee2ed:0",
+   "height": 55,
+   "txid": "19521c62482ac299b37c8ae4eab67abd150e3c21dc66b7e2b0919444769ee2ed",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "fe9ccc6c8b44c67ab170135d4148d6424e748f7549547d8174d59b5127df0102:0",
+   "height": 56,
+   "txid": "fe9ccc6c8b44c67ab170135d4148d6424e748f7549547d8174d59b5127df0102",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "bc0f0f8b3235421a036122299db7046a00c3a7cd1d650de3d92969780b873728:0",
+   "height": 57,
+   "txid": "bc0f0f8b3235421a036122299db7046a00c3a7cd1d650de3d92969780b873728",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "9635054e3de101ea39dcfa5f4cec63ceb1205db6e0a99304c8db2b3a162137e4:0",
+   "height": 58,
+   "txid": "9635054e3de101ea39dcfa5f4cec63ceb1205db6e0a99304c8db2b3a162137e4",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "3c0db11484606a63b04ef4b8adcd665655939d3932ab1ebe90d1dfc5f077ca95:0",
+   "height": 59,
+   "txid": "3c0db11484606a63b04ef4b8adcd665655939d3932ab1ebe90d1dfc5f077ca95",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "82a1e1731a9b22fdea55c09f2fac191a89efee127956fcfef65caab70f54002d:0",
+   "height": 60,
+   "txid": "82a1e1731a9b22fdea55c09f2fac191a89efee127956fcfef65caab70f54002d",
+   "vout": 0,
+   "sats": 5000000000
+  },
+  {
+   "id": "ae6eedf8e47ac6dda10ca9f3334bd3031795c55a124948003acd944ebd31fee1:0",
+   "height": 61,
+   "txid": "ae6eedf8e47ac6dda10ca9f3334bd3031795c55a124948003acd944ebd31fee1",
+   "vout": 0,
+   "sats": 5000000000
+  }
+ ]
+}
