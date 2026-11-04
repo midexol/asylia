@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export const STEPS = [
   { label: "Scan", href: "/scan", ready: true },
-  { label: "Seal", href: "/seal", ready: false },
+  { label: "Seal", href: "/seal", ready: true },
   { label: "Upgrade NEAR", href: "/upgrade", ready: false },
   { label: "Watch", href: "/watch", ready: false },
 ] as const;

@@ -84,3 +84,50 @@ export async function factsFor(parsed: Parsed, chain: Chain, f: Fetch = fetch): 
     return { error: e instanceof Error ? e.message : "lookup failed" };
   }
 }
+
+// ---------- Bitcoin rescue lookups ----------
+
+export interface BtcUtxo {
+  txid: string;
+  vout: number;
+  value: number;
+  status?: { confirmed: boolean };
+}
+
+/** Every unspent coin at an address, with the previous transaction for legacy addresses. */
+export async function bitcoinUtxos(p: Extract<Parsed, { chain: "bitcoin" }>, f: Fetch = fetch) {
+  const base = ENDPOINTS.bitcoin[p.network];
+  const utxos = (await getJson(f, `${base}/address/${p.address}/utxo`)) as BtcUtxo[];
+  const legacy = p.kind === "p2pkh" || p.kind === "p2sh";
+  return Promise.all(
+    utxos.map(async (u) => ({
+      txid: u.txid,
+      vout: u.vout,
+      value: u.value,
+      ...(legacy ? { prevTxHex: await getText(f, `${base}/tx/${u.txid}/hex`) } : {}),
+    })),
+  );
+}
+
+async function getText(f: Fetch, url: string): Promise<string> {
+  const res = await f(url, { signal: AbortSignal.timeout(TIMEOUT_MS) });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return (await res.text()).trim();
+}
+
+/** Today's fastest fee rate in sat/vB. */
+export async function bitcoinFastestFee(network: "mainnet" | "testnet", f: Fetch = fetch): Promise<number> {
+  const fees = (await getJson(f, `${ENDPOINTS.bitcoin[network]}/v1/fees/recommended`)) as { fastestFee: number };
+  return fees.fastestFee;
+}
+
+/** Has this address ever received or sent anything? A safe address must never have. */
+export async function bitcoinEverUsed(p: Extract<Parsed, { chain: "bitcoin" }>, f: Fetch = fetch): Promise<boolean> {
+  const a = (await getJson(f, `${ENDPOINTS.bitcoin[p.network]}/address/${p.address}`)) as {
+    chain_stats: { funded_txo_count: number; spent_txo_count: number };
+    mempool_stats: { funded_txo_count: number; spent_txo_count: number };
+  };
+  const c = a.chain_stats;
+  const m = a.mempool_stats;
+  return c.funded_txo_count + c.spent_txo_count + m.funded_txo_count + m.spent_txo_count > 0;
+}

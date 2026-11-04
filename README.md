@@ -33,7 +33,9 @@ This table is updated as work lands. Anything not marked built is not claimed.
 | Scan screen and `POST /api/scan` | built | [`components/Scanner.tsx`](components/Scanner.tsx), [`app/api/scan/route.ts`](app/api/scan/route.ts) |
 | Landing page | built | [`app/page.tsx`](app/page.tsx) |
 | Spikes: ML-DSA-65 keys, OutLayer sealing, HOT Wallet | researched; ML-DSA keygen, sign and verify checked locally | [`docs/spikes.md`](docs/spikes.md), [`scripts/spike-mldsa.mjs`](scripts/spike-mldsa.mjs) |
-| Seal: sign a Bitcoin and EVM rescue in the browser, seal it in OutLayer | planned | |
+| Seal, Bitcoin: build an unsigned sweep (PSBT) of every coin to a fresh address at a high fee cap; the owner signs in their own wallet; Lifeboat checks the signed escape pays only the safe address | built, tested with real signatures | [`lib/btc/rescue.ts`](lib/btc/rescue.ts), [`app/api/rescue/btc`](app/api/rescue/btc), [`components/Sealer.tsx`](components/Sealer.tsx) |
+| Seal into the OutLayer vault, released by the watchman | planned | |
+| Seal, Ethereum and BNB Chain | planned | |
 | Upgrade NEAR: one-click ML-DSA-65 key | planned | |
 | Watchman: canary wallets, NEAR AI Cloud judgement, release | planned | |
 | Simulated attack on testnet, end to end | planned | |
@@ -52,11 +54,27 @@ This table is updated as work lands. Anything not marked built is not claimed.
 
 All network calls sit in `lib/sources.ts` behind an injectable `fetch`, so the tests run offline.
 
+## Try the Bitcoin escape on testnet
+
+1. Run `npm run dev` and open `/scan`. Paste a Bitcoin testnet address (`tb1q...`) that holds coins and has sent before. You should see "At risk" and a **Seal an escape** button.
+2. Click it. In your wallet, make a brand-new receiving address, paste it as the safe address, and press **Prepare my escape**.
+   - A safe address that was used before is refused.
+   - You get an unsigned PSBT that sends every coin to the safe address at a fee well above today's.
+3. Load the PSBT into a testnet wallet that can sign PSBTs (Sparrow, Electrum), sign it, paste the result back, and press **Check my escape**.
+   - **A good escape:** "Your escape is ready", with its ID and a file to download.
+   - **A bad one is refused**, with the reason. That covers an escape that pays anyone else, adds an output, spends other coins, lowers the fee or isn't signed.
+
+Supported for escapes:
+
+- **Single-key addresses:** P2WPKH (`bc1q`/`tb1q`), P2PKH (`1...`/`m...`) and P2TR (`bc1p`). For Taproot, your wallet adds its own key details when signing.
+- **Not yet:** multisig.
+- **Escapes use replace-by-fee,** so one can be re-signed at a higher fee later.
+
 ## Run it
 
 ```bash
 npm install
-npm test            # 27 tests
+npm test            # 42 tests, offline
 npm run dev         # http://localhost:3000
 npm run spike:mldsa # make an ML-DSA-65 key locally, sign and verify
 ```
