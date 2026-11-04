@@ -9,6 +9,7 @@ export const ENDPOINTS = {
   bitcoin: { mainnet: "https://mempool.space/api", testnet: "https://mempool.space/testnet4/api" },
   ethereum: "https://ethereum-rpc.publicnode.com",
   bsc: "https://bsc-rpc.publicnode.com",
+  evmTestnet: { ethereum: "https://ethereum-sepolia-rpc.publicnode.com", bsc: "https://bsc-testnet-rpc.publicnode.com" },
   near: { mainnet: "https://rpc.mainnet.near.org", testnet: "https://rpc.testnet.near.org" },
   prices: "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,binancecoin,near&vs_currencies=usd",
 };
@@ -130,4 +131,46 @@ export async function bitcoinEverUsed(p: Extract<Parsed, { chain: "bitcoin" }>, 
   const c = a.chain_stats;
   const m = a.mempool_stats;
   return c.funded_txo_count + c.spent_txo_count + m.funded_txo_count + m.spent_txo_count > 0;
+}
+
+// ---------- Ethereum and BNB Chain rescue lookups ----------
+
+const BALANCE_OF = "0x70a08231"; // balanceOf(address)
+
+function evmUrl(chain: "ethereum" | "bsc", network: "mainnet" | "testnet"): string {
+  return network === "mainnet" ? ENDPOINTS[chain] : ENDPOINTS.evmTestnet[chain];
+}
+
+/** Everything needed to plan an escape: next nonce, balance, today's gas price, and stablecoin balances. */
+export async function evmRescueFacts(
+  address: string,
+  chain: "ethereum" | "bsc",
+  network: "mainnet" | "testnet",
+  tokens: { symbol: string; address: `0x${string}`; decimals: number }[],
+  f: Fetch = fetch,
+) {
+  const url = evmUrl(chain, network);
+  const [nonce, balance, gasPrice, ...tokenBalances] = await Promise.all([
+    rpc(f, url, "eth_getTransactionCount", [address, "pending"]),
+    rpc(f, url, "eth_getBalance", [address, "latest"]),
+    rpc(f, url, "eth_gasPrice", []),
+    ...(network === "mainnet" ? tokens : []).map((t) =>
+      rpc(f, url, "eth_call", [{ to: t.address, data: BALANCE_OF + address.slice(2).toLowerCase().padStart(64, "0") }, "latest"]),
+    ),
+  ]);
+  return {
+    nonce: Number(BigInt(nonce as string)),
+    balanceWei: BigInt(balance as string),
+    gasPriceWei: BigInt(gasPrice as string),
+    tokens: (network === "mainnet" ? tokens : []).map((t, i) => ({
+      ...t,
+      balance: BigInt((tokenBalances[i] as string) === "0x" ? 0 : (tokenBalances[i] as string)).toString(),
+    })),
+  };
+}
+
+/** Has this address ever sent a transaction on this chain? If so its public key is already out. */
+export async function evmHasSent(address: string, chain: "ethereum" | "bsc", network: "mainnet" | "testnet", f: Fetch = fetch) {
+  const nonce = await rpc(f, evmUrl(chain, network), "eth_getTransactionCount", [address, "latest"]);
+  return BigInt(nonce as string) > BigInt(0);
 }

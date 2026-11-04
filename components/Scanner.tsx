@@ -25,7 +25,6 @@ function summary(results: Result[]): string {
 }
 
 function nextStep(r: Result): string | null {
-  if (r.verdict === "exposed" && r.chain !== "bitcoin") return "Next: seal an escape for this wallet. Ethereum and BNB Chain escapes open in the next release.";
   if (r.verdict === "upgrade") return "Next: add a quantum-safe key. The NEAR upgrade opens in the next release.";
   if (r.verdict === "hidden" && r.chain !== "near") return "Keep it that way: don't send from this wallet until it has an escape sealed.";
   return null;
@@ -135,9 +134,9 @@ export function Scanner() {
                       {r.usd !== undefined && <span>{coins(r.balance, r.symbol)}</span>}
                     </div>
                   )}
-                  {r.verdict === "exposed" && r.chain === "bitcoin" && (
+                  {r.verdict === "exposed" && r.chain !== "near" && (
                     <div className="next">
-                      <Link href={`/seal?address=${encodeURIComponent(r.input)}`} className="btn">
+                      <Link href={`/seal?address=${encodeURIComponent(r.input)}${r.chain ? `&chain=${r.chain}` : ""}`} className="btn">
                         Seal an escape
                       </Link>
                     </div>

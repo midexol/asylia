@@ -7,6 +7,8 @@ import { Mark } from "./Mark";
 import { Steps } from "./Steps";
 import { NAME } from "@/lib/brand";
 import type { CheckResult, FeeSpeed, RescuePlan } from "@/lib/btc/rescue";
+import type { EvmChain, EvmNetwork, EvmPlan } from "@/lib/evm/rescue";
+import { EvmEscape } from "./EvmEscape";
 
 const SPEEDS: { key: FeeSpeed; label: string; note: string }[] = [
   { key: "normal", label: "Normal", note: "Today's fastest fee. Cheapest, but may stall on a busy day." },
@@ -39,6 +41,10 @@ export function Sealer() {
   const [to, setTo] = useState("");
   const [speed, setSpeed] = useState<FeeSpeed>("high");
   const [plan, setPlan] = useState<RescuePlan | null>(null);
+  const [evmPlan, setEvmPlan] = useState<EvmPlan | null>(null);
+  const [chain, setChain] = useState<EvmChain>(params.get("chain") === "bsc" ? "bsc" : "ethereum");
+  const [network, setNetwork] = useState<EvmNetwork>(params.get("network") === "testnet" ? "testnet" : "mainnet");
+  const isEvm = /^0x/i.test(from.trim());
   const [signed, setSigned] = useState("");
   const [check, setCheck] = useState<CheckResult | null>(null);
   const [busy, setBusy] = useState(false);
@@ -50,8 +56,13 @@ export function Sealer() {
     setError("");
     setCheck(null);
     try {
-      const r = await post<{ plan: RescuePlan }>("/api/rescue/btc/prepare", { from: from.trim(), to: to.trim(), speed });
-      setPlan(r.plan);
+      if (isEvm) {
+        const r = await post<{ plan: EvmPlan }>("/api/rescue/evm/prepare", { from: from.trim(), to: to.trim(), speed, chain, network });
+        setEvmPlan(r.plan);
+      } else {
+        const r = await post<{ plan: RescuePlan }>("/api/rescue/btc/prepare", { from: from.trim(), to: to.trim(), speed });
+        setPlan(r.plan);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong.");
     } finally {
@@ -74,6 +85,7 @@ export function Sealer() {
 
   function startOver() {
     setPlan(null);
+    setEvmPlan(null);
     setSigned("");
     setCheck(null);
     setError("");
@@ -91,7 +103,9 @@ export function Sealer() {
       <main className="wrap screen">
         <Steps current={1} />
 
-        {!plan && (
+        {evmPlan && <EvmEscape plan={evmPlan} onRestart={startOver} download={download} />}
+
+        {!plan && !evmPlan && (
           <>
             <div>
               <h1>Seal an escape</h1>
@@ -102,10 +116,38 @@ export function Sealer() {
             </div>
 
             <div className="paste">
-              <label htmlFor="from">The Bitcoin wallet to rescue</label>
-              <span className="hint">The address the scan marked as at risk.</span>
-              <input id="from" className="field-input" value={from} onChange={(e) => setFrom(e.target.value)} placeholder="bc1q... or tb1q..." spellCheck={false} autoCapitalize="off" />
+              <label htmlFor="from">The wallet to rescue</label>
+              <span className="hint">The address the scan marked as at risk: Bitcoin, Ethereum or BNB Chain.</span>
+              <input id="from" className="field-input" value={from} onChange={(e) => setFrom(e.target.value)} placeholder="bc1q... or 0x..." spellCheck={false} autoCapitalize="off" />
             </div>
+
+            {isEvm && (
+              <div className="pick-row">
+                <fieldset className="speeds">
+                  <legend>Which network?</legend>
+                  <div className="speed-row">
+                    {([["ethereum", "Ethereum"], ["bsc", "BNB Chain"]] as const).map(([k, label]) => (
+                      <label key={k} className={`speed ${chain === k ? "on" : ""}`}>
+                        <input type="radio" name="chain" value={k} checked={chain === k} onChange={() => setChain(k)} />
+                        <b>{label}</b>
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+                <fieldset className="speeds">
+                  <legend>Real coins or a test?</legend>
+                  <div className="speed-row">
+                    {([["mainnet", "Real coins"], ["testnet", "Testnet"]] as const).map(([k, label]) => (
+                      <label key={k} className={`speed ${network === k ? "on" : ""}`}>
+                        <input type="radio" name="network" value={k} checked={network === k} onChange={() => setNetwork(k)} />
+                        <b>{label}</b>
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+              </div>
+            )}
+
 
             <div className="paste">
               <label htmlFor="to">Where the coins should go</label>

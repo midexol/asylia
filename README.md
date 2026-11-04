@@ -35,7 +35,7 @@ This table is updated as work lands. Anything not marked built is not claimed.
 | Spikes: ML-DSA-65 keys, OutLayer sealing, HOT Wallet | researched; ML-DSA keygen, sign and verify checked locally | [`docs/spikes.md`](docs/spikes.md), [`scripts/spike-mldsa.mjs`](scripts/spike-mldsa.mjs) |
 | Seal, Bitcoin: build an unsigned sweep (PSBT) of every coin to a fresh address at a high fee cap; the owner signs in their own wallet; Lifeboat checks the signed escape pays only the safe address | built, tested with real signatures | [`lib/btc/rescue.ts`](lib/btc/rescue.ts), [`app/api/rescue/btc`](app/api/rescue/btc), [`components/Sealer.tsx`](components/Sealer.tsx) |
 | Seal into the OutLayer vault, released by the watchman | planned | |
-| Seal, Ethereum and BNB Chain | planned | |
+| Seal, Ethereum and BNB Chain: USDC and USDT transfers first, then a sweep of the native coin, nonces in sequence, high fee caps; signed offline (Foundry `cast mktx`); Lifeboat checks the signer, chain, nonces, recipient and fees | built, tested with real signatures | [`lib/evm/rescue.ts`](lib/evm/rescue.ts), [`app/api/rescue/evm`](app/api/rescue/evm), [`components/EvmEscape.tsx`](components/EvmEscape.tsx) |
 | Upgrade NEAR: one-click ML-DSA-65 key | planned | |
 | Watchman: canary wallets, NEAR AI Cloud judgement, release | planned | |
 | Simulated attack on testnet, end to end | planned | |
@@ -72,11 +72,26 @@ Supported for escapes:
 
 **Limit, stated plainly:** an escape is a race. If an attacker has already derived the private key, they can try to outbid the escape with their own transaction once it is broadcast. That is why escapes carry a fee cap far above today's, and why the watchman is meant to fire on the first signs of an attack (old exposed wallets moving), not after your own coins move.
 
+## Try the Ethereum or BNB Chain escape on testnet
+
+1. Open `/seal`, paste an exposed `0x` address, then choose **Ethereum** or **BNB Chain** and **Testnet** (Sepolia, or BNB Chain testnet). Paste a fresh `0x` address as the safe address.
+2. Press **Prepare my escape**. You get one `cast mktx` command per step:
+   - on mainnet, any USDC or USDT goes first;
+   - the rest of the native coin goes last, after reserving every fee.
+3. Run each command on your own machine. `cast` signs without sending.
+4. Paste the signed results, one per line, and press **Check my escape**.
+   - **A good escape:** "Your escape is ready".
+   - **A bad one is refused**, with the reason. That covers a wrong signer, a wrong chain, a missing step, a changed recipient or a lower fee cap.
+
+Browser wallets such as MetaMask cannot sign a transaction without sending it, which is why escapes are signed offline.
+
+**On Ethereum, a little dust stays behind.** The sweep reserves the full fee cap, and whatever the fee doesn't use stays in the old address. On BNB Chain the sweep empties the address exactly.
+
 ## Run it
 
 ```bash
 npm install
-npm test            # 42 tests, offline
+npm test            # 56 tests, offline
 npm run dev         # http://localhost:3000
 npm run spike:mldsa # make an ML-DSA-65 key locally, sign and verify
 ```
