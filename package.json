@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run",
+    "spike:mldsa": "node scripts/spike-mldsa.mjs"
   },
   "dependencies": {
     "@fastnear/ml-dsa-65": "^2.5.0",
