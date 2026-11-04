@@ -23,9 +23,13 @@ Lifeboat depends on three things working that nobody has stitched together befor
 - To compare a key with what `view_access_key_list` returns, convert it with `publicKeyToHandle()`.
 - Mainnet went live with network upgrade 2.13 on 20 July 2026 ([NEAR announcement, via Webull](https://www.webull.com/news/15259913496765440)).
 
-**Still open:** running the AddKey on testnet. It needs a funded testnet account and its classic key in environment variables, plus network access this workspace doesn't have. It is the first thing to run on Mide's machine: create a testnet account, then AddKey, then `queryAccessKey`.
+**Run on testnet, 4 November**, by the `NEAR testnet upgrade` workflow ([`scripts/near-upgrade.mjs`](../scripts/near-upgrade.mjs)):
 
-**Verdict:** works. The upgrade step is low risk.
+- **Account:** [`lifeboat-f86cd6e7d4.testnet`](https://testnet.nearblocks.io/address/lifeboat-f86cd6e7d4.testnet), created and funded from the testnet faucet. Testnet was on protocol 88.
+- **AddKey:** signed by the Ed25519 key. The account now lists an `ml-dsa-65-hash:…` key beside its `ed25519:…` key.
+- **Signing with the new key:** a transaction signed with the ML-DSA-65 key itself went through: [DVAmKNmf…YZgL2o](https://testnet.nearblocks.io/txns/DVAmKNmf8qmjGJ4fQAnyMGc4AVgjxZTbZPVbwCYZgL2o).
+
+**Verdict:** proven on testnet. The upgrade step is low risk.
 
 ## 2. Sealed rescue in OutLayer
 
