@@ -34,12 +34,13 @@ This table is updated as work lands. Anything not marked built is not claimed.
 | Landing page | built | [`app/page.tsx`](app/page.tsx) |
 | Spikes: ML-DSA-65 keys, OutLayer sealing, HOT Wallet | researched; ML-DSA keygen, sign and verify checked locally | [`docs/spikes.md`](docs/spikes.md), [`scripts/spike-mldsa.mjs`](scripts/spike-mldsa.mjs) |
 | Seal, Bitcoin: build an unsigned sweep (PSBT) of every coin to a fresh address at a high fee cap; the owner signs in their own wallet; Lifeboat checks the signed escape pays only the safe address | built, tested with real signatures | [`lib/btc/rescue.ts`](lib/btc/rescue.ts), [`app/api/rescue/btc`](app/api/rescue/btc), [`components/Sealer.tsx`](components/Sealer.tsx) |
-| Seal into the OutLayer vault, released by the watchman | planned | |
+| Vault in an OutLayer TEE: holds escapes encrypted to an enclave-made key; releases only when its own check of the canaries says eight or more moved in a day, then broadcasts them itself | built, deployed and self-tested on OutLayer testnet: [`lifeboat-f86cd6e7d4.testnet/lifeboat-vault`](https://testnet.nearblocks.io/txns/91xhjC7iNH23XCC1HqQ6iSLy9TnuYKKvGcR1wBPeQApW) | [`vault/`](vault), [`lib/vault/seal.ts`](lib/vault/seal.ts), [`scripts/vault.mjs`](scripts/vault.mjs), [`.github/workflows/vault.yml`](.github/workflows/vault.yml) |
+| The website sealing escapes into the vault from the Seal screen | planned | |
 | Seal, Ethereum and BNB Chain: USDC and USDT transfers first, then a sweep of the native coin, nonces in sequence, high fee caps; signed offline (Foundry `cast mktx`); Lifeboat checks the signer, chain, nonces, recipient and fees | built, tested with real signatures | [`lib/evm/rescue.ts`](lib/evm/rescue.ts), [`app/api/rescue/evm`](app/api/rescue/evm), [`components/EvmEscape.tsx`](components/EvmEscape.tsx) |
 | Upgrade NEAR, testnet run: create or reuse a testnet account, add an ML-DSA-65 key signed by the classic key, then sign a transaction with the ML-DSA key itself (optionally retire the classic key) | built, run on testnet: [`lifeboat-f86cd6e7d4.testnet`](https://testnet.nearblocks.io/address/lifeboat-f86cd6e7d4.testnet) holds an ML-DSA-65 key beside its Ed25519 key, and [this transaction](https://testnet.nearblocks.io/txns/DVAmKNmf8qmjGJ4fQAnyMGc4AVgjxZTbZPVbwCYZgL2o) was signed with the ML-DSA-65 key | [`scripts/near-upgrade.mjs`](scripts/near-upgrade.mjs), [`.github/workflows/near-testnet.yml`](.github/workflows/near-testnet.yml) |
 | Upgrade NEAR screen: one button in the browser, with a wallet | planned | |
 | Watchman: 60 canaries (unspent 2009 block rewards paid to bare public keys, 3,000 BTC), checked live; rules raise watch, alarm and release levels; NEAR AI Cloud gives a second opinion on an alarm but can never block a release or cause one alone; Watch screen with a labelled simulated attack | built, tested | [`lib/watchman`](lib/watchman), [`data/canaries.json`](data/canaries.json), [`scripts/find-canaries.mjs`](scripts/find-canaries.mjs), [`app/api/watch/status`](app/api/watch/status), [`components/Watch.tsx`](components/Watch.tsx) |
-| Watchman releasing sealed escapes from the vault | planned (needs the OutLayer vault) | |
+
 | Simulated attack on testnet, end to end | planned | |
 
 ## How the exposure check works
@@ -102,6 +103,33 @@ Browser wallets such as MetaMask cannot sign a transaction without sending it, w
 **What the AI can and can't do.** It sees counts and fees, never addresses. It can confirm an alarm, but it can't start one and it can't block a release.
 
 **Try it.** Open `/watch` to see the live state, checked against mempool.space every minute. Press **Show a simulated attack** to see eight canaries move: the screen says plainly that the attack is simulated, and nothing is released.
+
+## The vault
+
+The vault is a small Rust program ([`vault/`](vault)) that runs inside OutLayer's trusted enclave on NEAR. It answers four requests:
+
+| Request | What the vault does |
+| --- | --- |
+| `pubkey` | Makes an X25519 key from enclave randomness on first use, keeps the secret half in OutLayer's encrypted storage, and returns only the public half. |
+| `seal` | Takes an escape encrypted to that key in the owner's browser ([`lib/vault/seal.ts`](lib/vault/seal.ts)), opens it inside the enclave, checks it and stores it. The signed transactions never appear in the clear on chain. |
+| `status` | Returns counts only. |
+| `release` | Checks the 60 canaries itself, from mempool.space. Only if eight or more moved in the last day does it broadcast every sealed escape for that network: Bitcoin through mempool.space, Ethereum and BNB Chain through `eth_sendRawTransaction`. |
+
+Whoever calls `release` can only ask; the vault answers by its rule. An escape can only pay the address its owner signed it to, so even a wrongful release moves coins only to their owner's safe address.
+
+**Self-test on OutLayer testnet, 4 November** (`Vault` workflow with `selftest=yes`):
+
+1. `pubkey` returned the vault's key.
+2. A test escape was encrypted and sealed. `status` then reported 1 sealed.
+3. `release` on mainnet checked all 60 canaries from inside the enclave, found them calm, and released nothing.
+4. A tampered blob was refused.
+
+The transaction for each step is linked in that run's summary.
+
+**Limits:**
+
+- **Project upgrades:** the vault's key lives in project storage. A later version of the project, deployed by its owner, could read sealed escapes. Pinning the key to one build is the next hardening step.
+- **The AI judgement:** it runs in the watchman, not yet inside the vault. The vault releases on the rule of eight alone.
 
 ## Run it
 

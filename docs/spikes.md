@@ -55,7 +55,12 @@ The rescue is signed before it is sealed, so whoever releases it cannot change w
 - The secret reaches the WASM in plain form. The WASM must be tiny and pinned by hash, so it cannot be swapped for one that leaks.
 - The docs don't mention testnet support for secrets. This needs checking on testnet before 10 November.
 
-**Verdict:** workable with the registry as the only caller. Fallback as in the spec: encrypt to a key held by the watchman's TEE on NEAR AI Cloud.
+**Verdict, updated the same day: proven, with a better design than the one above.** OutLayer runs Lifeboat's own Rust program (`wasm32-wasip2`) inside the enclave. That program has encrypted storage, outbound HTTP and enclave randomness, so:
+
+- **Keys:** the vault makes its own X25519 key inside the enclave, and owners encrypt escapes to it in the browser. No OutLayer secrets UI is involved.
+- **Release:** the release rule runs inside the enclave. The vault checks the canaries itself and broadcasts escapes itself, so no registry contract has to be the gatekeeper.
+
+Deployed as `lifeboat-f86cd6e7d4.testnet/lifeboat-vault` and self-tested on testnet: key, seal, status, a refused release, and a refused tampered seal. See the README's "The vault" section.
 
 ## 3. HOT Wallet and ML-DSA
 
