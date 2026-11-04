@@ -35,7 +35,7 @@ This table is updated as work lands. Anything not marked built is not claimed.
 | Spikes: ML-DSA-65 keys, OutLayer sealing, HOT Wallet | researched; ML-DSA keygen, sign and verify checked locally | [`docs/spikes.md`](docs/spikes.md), [`scripts/spike-mldsa.mjs`](scripts/spike-mldsa.mjs) |
 | Seal, Bitcoin: build an unsigned sweep (PSBT) of every coin to a fresh address at a high fee cap; the owner signs in their own wallet; Lifeboat checks the signed escape pays only the safe address | built, tested with real signatures | [`lib/btc/rescue.ts`](lib/btc/rescue.ts), [`app/api/rescue/btc`](app/api/rescue/btc), [`components/Sealer.tsx`](components/Sealer.tsx) |
 | Vault in an OutLayer TEE: holds escapes encrypted to an enclave-made key; releases only when its own check of the canaries says eight or more moved in a day, then broadcasts them itself | built, deployed and self-tested on OutLayer testnet: [`lifeboat-f86cd6e7d4.testnet/lifeboat-vault`](https://testnet.nearblocks.io/txns/91xhjC7iNH23XCC1HqQ6iSLy9TnuYKKvGcR1wBPeQApW) | [`vault/`](vault), [`lib/vault/seal.ts`](lib/vault/seal.ts), [`scripts/vault.mjs`](scripts/vault.mjs), [`.github/workflows/vault.yml`](.github/workflows/vault.yml) |
-| The website sealing escapes into the vault from the Seal screen | planned | |
+| The Seal screen seals checked testnet escapes into the vault: encrypted in the browser, carried by `POST /api/vault/seal`, recorded on NEAR testnet; real-coin escapes are download-only while the vault is on testnet | built; end-to-end run through the site sealed a test escape ([transaction](https://testnet.nearblocks.io/txns/47idhuMV61qirbBhT7ocXyQ7PxbL3yVJBq4yP4c589ws)) | [`components/VaultSeal.tsx`](components/VaultSeal.tsx), [`app/api/vault/seal`](app/api/vault/seal), [`lib/vault`](lib/vault), [`.github/workflows/site-e2e.yml`](.github/workflows/site-e2e.yml) |
 | Seal, Ethereum and BNB Chain: USDC and USDT transfers first, then a sweep of the native coin, nonces in sequence, high fee caps; signed offline (Foundry `cast mktx`); Lifeboat checks the signer, chain, nonces, recipient and fees | built, tested with real signatures | [`lib/evm/rescue.ts`](lib/evm/rescue.ts), [`app/api/rescue/evm`](app/api/rescue/evm), [`components/EvmEscape.tsx`](components/EvmEscape.tsx) |
 | Upgrade NEAR, testnet run: create or reuse a testnet account, add an ML-DSA-65 key signed by the classic key, then sign a transaction with the ML-DSA key itself (optionally retire the classic key) | built, run on testnet: [`lifeboat-f86cd6e7d4.testnet`](https://testnet.nearblocks.io/address/lifeboat-f86cd6e7d4.testnet) holds an ML-DSA-65 key beside its Ed25519 key, and [this transaction](https://testnet.nearblocks.io/txns/DVAmKNmf8qmjGJ4fQAnyMGc4AVgjxZTbZPVbwCYZgL2o) was signed with the ML-DSA-65 key | [`scripts/near-upgrade.mjs`](scripts/near-upgrade.mjs), [`.github/workflows/near-testnet.yml`](.github/workflows/near-testnet.yml) |
 | Upgrade NEAR screen: one button in the browser, with a wallet | planned | |
@@ -135,12 +135,14 @@ The transaction for each step is linked in that run's summary.
 
 ```bash
 npm install
-npm test            # 72 tests, offline
+npm test            # 81 tests, offline
 npm run dev         # http://localhost:3000
 npm run spike:mldsa # make an ML-DSA-65 key locally, sign and verify
 ```
 
 No keys or environment variables are needed for the scanner.
+
+**To seal into the vault from the site,** set `NEAR_TESTNET_SEED` on the server: the same value as the repository secret, for example in Vercel's environment variables. It pays for the vault's runs from the Lifeboat testnet account. Escapes are encrypted in the browser before they reach the server.
 
 ## Renaming
 
