@@ -25,6 +25,23 @@ jobs:
           for i in $(seq 1 30); do curl -sf localhost:3000 > /dev/null && break; sleep 1; done
       - name: Seal through the site
         run: node scripts/e2e-vault.mjs http://localhost:3000
+      - name: Upgrade screen reads the upgraded testnet account
+        run: |
+          body=$(curl -s "localhost:3000/api/near/keys?account=lifeboat-f86cd6e7d4.testnet")
+          echo "$body"
+          echo "$body" | grep -q '"state":"upgraded"'
+          echo "- /api/near/keys sees lifeboat-f86cd6e7d4.testnet as upgraded" >> "$GITHUB_STEP_SUMMARY"
+      - name: Scan, live
+        run: |
+          body=$(curl -s -X POST localhost:3000/api/scan -H 'content-type: application/json' -d '{"text":"lifeboat-f86cd6e7d4.testnet\n1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"}')
+          echo "$body"
+          echo "- /api/scan, live: $body" | cut -c1-600 >> "$GITHUB_STEP_SUMMARY"
+      - name: Watchman, live
+        run: |
+          body=$(curl -s "localhost:3000/api/watch/status")
+          echo "$body" | head -c 600
+          echo "$body" | grep -q '"level"'
+          echo "- /api/watch/status, live: $(echo "$body" | grep -o '"headline":"[^"]*"')" >> "$GITHUB_STEP_SUMMARY"
       - name: Vault status
         run: node scripts/vault.mjs call '{"op":"status"}'
       - name: Server log on failure

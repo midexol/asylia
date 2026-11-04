@@ -27,8 +27,12 @@ async function rpc(f: Fetch, url: string, method: string, params: unknown): Prom
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
-  })) as { result?: unknown; error?: { message?: string } };
-  if (body.error) throw new Error(body.error.message ?? "RPC error");
+  })) as { result?: unknown; error?: { message?: string; data?: unknown; cause?: { name?: string } } };
+  if (body.error) {
+    // NEAR puts the useful part in cause.name (UNKNOWN_ACCOUNT) and data, not in message.
+    const e = body.error;
+    throw new Error([e.cause?.name, typeof e.data === "string" ? e.data : "", e.message].filter(Boolean).join(": ") || "RPC error");
+  }
   return body.result;
 }
 
@@ -225,4 +229,26 @@ export async function mapLimit<T, R>(items: T[], limit: number, fn: (item: T) =>
   };
   await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
   return out;
+}
+
+// ---------- NEAR upgrade lookups ----------
+
+export interface NearKey {
+  publicKey: string;
+  kind: "quantum-safe" | "classic";
+  fullAccess: boolean;
+}
+
+/** Every access key on a NEAR account, marked quantum-safe (ML-DSA-65) or classic. */
+export async function nearKeys(p: Extract<Parsed, { chain: "near" }>, f: Fetch = fetch): Promise<NearKey[]> {
+  const r = (await rpc(f, ENDPOINTS.near[p.network], "query", {
+    request_type: "view_access_key_list",
+    finality: "final",
+    account_id: p.address,
+  })) as { keys: { public_key: string; access_key: { permission: unknown } }[] };
+  return r.keys.map((k) => ({
+    publicKey: k.public_key,
+    kind: k.public_key.startsWith("ml-dsa-65") ? "quantum-safe" : "classic",
+    fullAccess: k.access_key.permission === "FullAccess",
+  }));
 }
