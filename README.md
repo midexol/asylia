@@ -66,9 +66,11 @@ All network calls sit in `lib/sources.ts` behind an injectable `fetch`, so the t
 
 Supported for escapes:
 
-- **Single-key addresses:** P2WPKH (`bc1q`/`tb1q`), P2PKH (`1...`/`m...`) and P2TR (`bc1p`). For Taproot, your wallet adds its own key details when signing.
+- **Single-key addresses:** P2WPKH (`bc1q`/`tb1q`) and P2PKH (`1...`/`m...`), both tested with real signatures. P2TR (`bc1p`) builds, but signing with a real Taproot wallet is not tested yet; the wallet adds its own key details when signing.
 - **Not yet:** multisig.
 - **Escapes use replace-by-fee,** so one can be re-signed at a higher fee later.
+
+**Limit, stated plainly:** an escape is a race. If an attacker has already derived the private key, they can try to outbid the escape with their own transaction once it is broadcast. That is why escapes carry a fee cap far above today's, and why the watchman is meant to fire on the first signs of an attack (old exposed wallets moving), not after your own coins move.
 
 ## Run it
 
