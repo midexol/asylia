@@ -9,6 +9,7 @@ import { NAME } from "@/lib/brand";
 import type { CheckResult, FeeSpeed, RescuePlan } from "@/lib/btc/rescue";
 import type { EvmChain, EvmNetwork, EvmPlan } from "@/lib/evm/rescue";
 import { EvmEscape } from "./EvmEscape";
+import { VaultSeal } from "./VaultSeal";
 
 const SPEEDS: { key: FeeSpeed; label: string; note: string }[] = [
   { key: "normal", label: "Normal", note: "Today's fastest fee. Cheapest, but may stall on a busy day." },
@@ -265,15 +266,15 @@ export function Sealer() {
               <div><dt>Fee</dt><dd>{sats(check.fee ?? plan.fee)}, {check.feeRate} sat/vB</dd></div>
               <div><dt>Escape ID</dt><dd>{check.txid}</dd></div>
             </dl>
-            <p className="intro">
-              Sealing into the vault, where the watchman can release it, opens in the next release. Until then, keep
-              this file somewhere safe. It is harmless if someone else finds it: it can only move your coins to your own
-              safe address.
+            <VaultSeal chain="bitcoin" network={plan.network} txid={check.txid ?? ""} txs={check.txHex ? [check.txHex] : []} />
+            <p className="privacy">
+              Also keep a copy yourself. The file is harmless if someone else finds it: it can only move your coins to your
+              own safe address.
             </p>
             <div className="actions">
               <button
                 type="button"
-                className="btn"
+                className="btn btn-quiet"
                 onClick={() =>
                   download(
                     `lifeboat-escape-${check.txid?.slice(0, 8)}.json`,

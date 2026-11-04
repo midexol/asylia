@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { NAME } from "@/lib/brand";
+import { VaultSeal } from "./VaultSeal";
 import { CHAINS, castCommand, type EvmCheck, type EvmPlan, type PlannedTx } from "@/lib/evm/rescue";
 
 const units = (amount: string, decimals: number, symbol: string) => {
@@ -83,14 +84,15 @@ export function EvmEscape({
           ))}
           <div><dt>Fee cap</dt><dd>{gwei(plan.feeCapWei)}</dd></div>
         </dl>
-        <p className="intro">
-          Sealing into the vault, where the watchman can release it, opens in a later release. Until then, keep this file
-          somewhere safe. It is harmless if someone else finds it: it can only move your coins to your own safe address.
+        <VaultSeal chain={plan.chain} network={plan.network} txid={check.hashes[0] ?? ""} txs={check.signed} />
+        <p className="privacy">
+          Also keep a copy yourself. The file is harmless if someone else finds it: it can only move your coins to your own
+          safe address.
         </p>
         <div className="actions">
           <button
             type="button"
-            className="btn"
+            className="btn btn-quiet"
             onClick={() =>
               download(
                 `lifeboat-escape-${plan.chain}-${check.hashes[0]?.slice(2, 10)}.json`,

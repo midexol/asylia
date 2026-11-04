@@ -179,6 +179,12 @@ code { font-family: ui-monospace, Menlo, monospace; font-size: 0.92em; }
 .canaries li.moved { border-color: var(--coral); background: rgba(229, 131, 99, 0.12); }
 .canaries li.moved span { color: var(--coral); }
 
+.vault-box { border: 1px solid var(--gold); border-radius: 16px; padding: 20px 22px; display: flex; flex-direction: column; gap: 8px; }
+.vault-box b { font-family: var(--serif); font-weight: 800; font-size: 28px; }
+.vault-box span { color: rgba(242, 239, 232, 0.8); }
+.vault-box.sealed { border-color: var(--sea); }
+.vault-box.sealed b { color: var(--sea); }
+
 @media (max-width: 720px) {
   .facts div { grid-template-columns: 1fr; gap: 4px; }
   .wrap { padding-left: 16px; padding-right: 16px; }

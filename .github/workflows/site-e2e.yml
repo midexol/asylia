@@ -1,0 +1,32 @@
+name: Site end-to-end
+
+# Builds the site, starts it with the testnet account, and seals a harmless test escape into
+# the live OutLayer testnet vault through the same route the Seal screen uses.
+on:
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEAR_TESTNET_SEED: ${{ secrets.NEAR_TESTNET_SEED }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Start the site
+        run: |
+          npx next start -p 3000 > next.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf localhost:3000 > /dev/null && break; sleep 1; done
+      - name: Seal through the site
+        run: node scripts/e2e-vault.mjs http://localhost:3000
+      - name: Vault status
+        run: node scripts/vault.mjs call '{"op":"status"}'
+      - name: Server log on failure
+        if: failure()
+        run: tail -50 next.log
