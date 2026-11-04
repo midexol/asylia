@@ -5,7 +5,7 @@ import { NAME, REPO, SISTER, TAGLINE } from "@/lib/brand";
 const STEPS = [
   ["Scan", "Paste your wallet addresses. We tell you which ones a quantum computer could open, and how much is in them."],
   ["Seal", "For each wallet at risk, you sign an escape to a fresh, safe address. It is locked away where nobody can read it, us included."],
-  ["Upgrade NEAR", "NEAR accounts don't need an escape. One button adds a quantum-safe key to the same account."],
+  ["Upgrade NEAR", "NEAR accounts don't need an escape. They add a quantum-safe key to the same account, and we show you exactly how."],
   ["Watch", "A watchman keeps an eye on old wallets that would fall first. If they start moving, your escape goes out on its own."],
 ];
 
