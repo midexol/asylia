@@ -52,7 +52,7 @@ export async function evmFacts(address: string, chain: "ethereum" | "bsc", f: Fe
     rpc(f, url, "eth_getTransactionCount", [address, "latest"]),
     rpc(f, url, "eth_getBalance", [address, "latest"]),
   ]);
-  return { sentBefore: BigInt(nonce as string) > 0n, balance: Number(BigInt(wei as string)) / 1e18 };
+  return { sentBefore: BigInt(nonce as string) > BigInt(0), balance: Number(BigInt(wei as string)) / 1e18 };
 }
 
 export async function nearFacts(p: Extract<Parsed, { chain: "near" }>, f: Fetch = fetch): Promise<Facts> {
@@ -64,7 +64,7 @@ export async function nearFacts(p: Extract<Parsed, { chain: "near" }>, f: Fetch 
   const amount = (account as { amount: string }).amount;
   const list = (keys as { keys: { public_key: string }[] }).keys;
   return {
-    balance: Number(BigInt(amount) / 10n ** 18n) / 1e6,
+    balance: Number(BigInt(amount) / BigInt("1000000000000000000")) / 1e6,
     pqKey: list.some((k) => k.public_key.startsWith("ml-dsa-65")),
   };
 }
