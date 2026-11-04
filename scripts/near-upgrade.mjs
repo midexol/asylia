@@ -23,6 +23,10 @@ import { publicKeyToHandle, signerFromSeed, ML_DSA_65_PROTOCOL_VERSION } from "@
 const NETWORK = "testnet";
 const sha256 = (s) => createHash("sha256").update(s).digest();
 const explorer = (hash) => `https://testnet.nearblocks.io/txns/${hash}`;
+// FastNEAR returns raw JSON-RPC envelopes ({ result: ... }); unwrap either shape.
+const unwrap = (r) => r?.result ?? r;
+const txHash = (r) => unwrap(r)?.transaction?.hash ?? unwrap(r)?.transaction_outcome?.id ?? "unknown";
+const keyList = async () => (unwrap(await near.queryAccessKeyList({ accountId, network: NETWORK }))?.keys ?? []).map((k) => k.public_key);
 const summary = [];
 const say = (line) => {
   console.log(line);
@@ -61,7 +65,7 @@ say(`## Lifeboat NEAR upgrade on testnet\n`);
 say(`- Account: \`${accountId}\` ([explorer](https://testnet.nearblocks.io/address/${accountId}))`);
 
 try {
-  const version = await near.queryProtocolVersion({ network: NETWORK });
+  const version = unwrap(await near.queryProtocolVersion({ network: NETWORK }));
   say(`- Protocol version: ${version} (ML-DSA-65 needs ${ML_DSA_65_PROTOCOL_VERSION})`);
   if (Number(version) < ML_DSA_65_PROTOCOL_VERSION) throw new Error("Testnet does not support ML-DSA-65 keys yet.");
 
@@ -78,8 +82,7 @@ try {
   }
 
   const handle = publicKeyToHandle(pq.publicKey);
-  const before = await near.queryAccessKeyList({ accountId, network: NETWORK });
-  const keysBefore = (before.keys ?? []).map((k) => k.public_key);
+  const keysBefore = await keyList();
   say(`- Keys before: ${keysBefore.map((k) => `\`${k.slice(0, 24)}…\``).join(", ")}`);
 
   if (!keysBefore.includes(handle)) {
@@ -91,7 +94,7 @@ try {
       waitUntil: "FINAL",
       network: NETWORK,
     });
-    const hash = added?.transaction?.hash ?? added?.transaction_outcome?.id;
+    const hash = txHash(added);
     say(`- Added the quantum-safe key, signed by the classic key: [${hash}](${explorer(hash)})`);
   } else {
     say(`- The quantum-safe key was already on the account`);
@@ -105,7 +108,7 @@ try {
     waitUntil: "FINAL",
     network: NETWORK,
   });
-  const proofHash = proof?.transaction?.hash ?? proof?.transaction_outcome?.id;
+  const proofHash = txHash(proof);
   say(`- Signed a transaction with the ML-DSA-65 key itself (3,309-byte signature): [${proofHash}](${explorer(proofHash)})`);
 
   if (process.env.RETIRE_CLASSIC === "1") {
@@ -117,12 +120,13 @@ try {
       waitUntil: "FINAL",
       network: NETWORK,
     });
-    const h = retired?.transaction?.hash ?? retired?.transaction_outcome?.id;
+    const h = txHash(retired);
     say(`- Retired the classic key, signed by the quantum-safe key: [${h}](${explorer(h)})`);
   }
 
-  const after = await near.queryAccessKeyList({ accountId, network: NETWORK });
-  say(`- Keys after: ${(after.keys ?? []).map((k) => `\`${k.public_key.slice(0, 24)}…\``).join(", ")}`);
+  const keysAfter = await keyList();
+  say(`- Keys after: ${keysAfter.map((k) => `\`${k.slice(0, 24)}…\``).join(", ")}`);
+  if (!keysAfter.includes(handle)) throw new Error("The quantum-safe key is not on the account after all.");
   say(`\nDone: the same account, with the same funds, now answers to a quantum-safe key.`);
   finish(0);
 } catch (e) {
