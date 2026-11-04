@@ -1,0 +1,28 @@
+# Notes for coding agents
+
+## What this is
+
+Lifeboat is a Next.js 15 (App Router, TypeScript) app. Read [README.md](README.md) for the product, and [docs/spikes.md](docs/spikes.md) for what is proven and what is open.
+
+## Commands
+
+- `npm test`: vitest, runs offline
+- `npx eslint .`
+- `npx tsc --noEmit`
+- `npm run build`
+
+## Rules
+
+- **Name:** the product name appears only in `lib/brand.ts`. Never hard-code it elsewhere.
+- **Network calls:** they go in `lib/sources.ts` and take a `fetch` parameter, so tests can fake them. Pure logic stays in `lib/address.ts` and `lib/exposure.ts`.
+- **Failed lookups:** a failed lookup must produce the verdict `unknown`, never `hidden` or `empty`.
+- **Copy on screen:** plain English, sentence case, one obvious action per screen. Avoid jargon such as "UTXO", "nonce" or "secp256k1" in the UI. It is fine in code and docs.
+- **Design:**
+  - colours: pure black `#000`, ivory `#F2EFE8`, gold `#D6AE55`, coral `#E58363` for danger, sea `#8FB8A8` for safe
+  - type: Bodoni Moda 800/900 for headlines, Instrument Sans for everything else
+  - no gradients
+- **Safety:**
+  - never commit keys, seeds or `.env` files
+  - never sign or broadcast on mainnet
+  - testnet only, and only with the owner's go-ahead
+- **Commits:** authored as midexol. No co-author or tool attribution lines.
