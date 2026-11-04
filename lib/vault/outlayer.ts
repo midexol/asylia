@@ -66,7 +66,8 @@ export async function callVault(input: Record<string, unknown>, env: Record<stri
   } catch {
     /* fall back to a fixed deposit; the unused part is refunded */
   }
-  const result = await near.sendTx({
+  const result = await near
+    .sendTx({
     receiverId: VAULT.outlayer,
     actions: [
       near.actions.functionCall({
@@ -78,8 +79,40 @@ export async function callVault(input: Record<string, unknown>, env: Record<stri
     ],
     signer,
     signerId: accountId,
-    waitUntil: "FINAL",
+    waitUntil: "EXECUTED_OPTIMISTIC",
     network: VAULT.network,
-  });
+    })
+    .catch((e: unknown) => {
+      // The RPC can time out waiting for the yield/resume to finish even though the vault has
+      // answered; the timeout error then carries the outcome. Use it rather than report failure.
+      const inner = outcomeInError(e);
+      if (inner) return inner;
+      throw e;
+    });
   return readOutcome(result);
+}
+
+/** Dig a transaction outcome out of an RPC timeout error, if it carries one. */
+export function outcomeInError(e: unknown): unknown | null {
+  const seen = new Set<unknown>();
+  const walk = (v: unknown): unknown | null => {
+    if (!v || typeof v !== "object" || seen.has(v)) return null;
+    seen.add(v);
+    const o = v as Record<string, unknown>;
+    if (o.receipts_outcome && (o.transaction || o.status)) return o;
+    for (const k of Object.keys(o)) {
+      const found = walk(o[k]);
+      if (found) return found;
+    }
+    return null;
+  };
+  let candidate: unknown = e;
+  if (e instanceof Error) {
+    try {
+      candidate = JSON.parse(e.message);
+    } catch {
+      candidate = e;
+    }
+  }
+  return walk(candidate) ?? walk(e);
 }

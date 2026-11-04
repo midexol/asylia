@@ -46,14 +46,38 @@ near.config({ networkId: NETWORK });
 const { accountId, signer } = testnetAccount();
 const projectId = `${accountId}/${NAME}`;
 
+function outcomeInError(e) {
+  const seen = new Set();
+  const walk = (v) => {
+    if (!v || typeof v !== "object" || seen.has(v)) return null;
+    seen.add(v);
+    if (v.receipts_outcome && (v.transaction || v.status)) return v;
+    for (const k of Object.keys(v)) {
+      const f = walk(v[k]);
+      if (f) return f;
+    }
+    return null;
+  };
+  let c = e;
+  try {
+    c = JSON.parse(e.message);
+  } catch {}
+  return walk(c) ?? walk(e);
+}
+
 async function call(methodName, args, deposit, gas = TGAS(300)) {
   return near.sendTx({
     receiverId: OUTLAYER,
     actions: [near.actions.functionCall({ methodName, args, gas, deposit })],
     signer,
     signerId: accountId,
-    waitUntil: "FINAL",
+    waitUntil: "EXECUTED_OPTIMISTIC",
     network: NETWORK,
+  }).catch((e) => {
+    // The RPC can time out while OutLayer's yield/resume finishes; the error carries the outcome.
+    const inner = outcomeInError(e);
+    if (inner) return inner;
+    throw e;
   });
 }
 

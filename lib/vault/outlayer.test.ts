@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { escapeId, VAULT } from "./config";
-import { readOutcome, vaultAccount, VaultUnavailable } from "./outlayer";
+import { outcomeInError, readOutcome, vaultAccount, VaultUnavailable } from "./outlayer";
 
 const b64 = (s: string) => Buffer.from(s).toString("base64");
 
@@ -45,5 +45,14 @@ describe("escapeId", () => {
     expect(escapeId("0xABCdef")).toBe("ABCdef");
     expect(escapeId("a".repeat(100))).toHaveLength(80);
     expect(VAULT.project).toMatch(/\/lifeboat-vault$/);
+  });
+});
+
+describe("outcomeInError", () => {
+  it("recovers the outcome from an RPC timeout that carries it", () => {
+    const status = { receipts_outcome: [{ outcome: { status: { SuccessValue: b64('{"ok":true,"sealed":2}') } } }], status: {}, transaction: { hash: "H3" } };
+    const err = new Error(JSON.stringify({ code: 408, data: { error: { cause: { info: { cause: "PENDING", status } } } } }));
+    expect(readOutcome(outcomeInError(err))).toMatchObject({ hash: "H3", answer: { ok: true, sealed: 2 } });
+    expect(outcomeInError(new Error("plain failure"))).toBeNull();
   });
 });
