@@ -1,0 +1,30 @@
+[package]
+name = "lifeboat-vault"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Lifeboat's sealed vault: holds signed escapes inside an OutLayer TEE and releases them only when canary coins move"
+
+[[bin]]
+name = "lifeboat-vault"
+path = "src/main.rs"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+x25519-dalek = { version = "2", features = ["static_secrets"] }
+chacha20poly1305 = "0.10"
+hkdf = "0.12"
+sha2 = "0.10"
+base64 = "0.22"
+
+# Host interfaces exist only inside OutLayer's wasm32-wasip2 runtime.
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+outlayer = "0.2.1"
+wasi-http-client = "0.2"
+getrandom = "0.3"
+
+[profile.release]
+opt-level = "z"
+lto = true
+strip = true
