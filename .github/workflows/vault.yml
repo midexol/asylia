@@ -1,0 +1,70 @@
+name: Vault
+
+# Builds the OutLayer vault (Rust, wasm32-wasip2). On a manual run with deploy=yes it publishes
+# the wasm as a GitHub release asset and registers it on OutLayer testnet as lifeboat-vault.
+on:
+  push:
+    paths: ["vault/**", "data/canaries*.json", ".github/workflows/vault.yml"]
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: "Publish and register on OutLayer testnet (type yes)"
+        default: "no"
+      call:
+        description: "After deploying, call the vault with this op (pubkey, status)"
+        default: "pubkey"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: vault
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-wasip2
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: vault
+      - run: cargo test
+      - run: cargo build --target wasm32-wasip2 --release
+      - name: Size and hash
+        id: wasm
+        run: |
+          f=target/wasm32-wasip2/release/lifeboat-vault.wasm
+          ls -l $f
+          echo "sha256=$(sha256sum $f | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lifeboat-vault-wasm
+          path: vault/target/wasm32-wasip2/release/lifeboat-vault.wasm
+      - name: Publish as a release asset
+        if: inputs.deploy == 'yes'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="vault-${{ steps.wasm.outputs.sha256 }}"
+          tag="${tag:0:20}"
+          gh release view "$tag" >/dev/null 2>&1 || gh release create "$tag" --title "Vault build ${tag#vault-}" --notes "lifeboat-vault.wasm, sha256 ${{ steps.wasm.outputs.sha256 }}, built from ${{ github.sha }}" --target ${{ github.sha }}
+          gh release upload "$tag" target/wasm32-wasip2/release/lifeboat-vault.wasm --clobber
+          echo "WASM_URL=https://github.com/${{ github.repository }}/releases/download/$tag/lifeboat-vault.wasm" >> "$GITHUB_ENV"
+      - uses: actions/setup-node@v4
+        if: inputs.deploy == 'yes'
+        with:
+          node-version: "22"
+      - name: Register on OutLayer testnet
+        if: inputs.deploy == 'yes'
+        working-directory: .
+        env:
+          NEAR_TESTNET_SEED: ${{ secrets.NEAR_TESTNET_SEED }}
+          WASM_SHA256: ${{ steps.wasm.outputs.sha256 }}
+        run: |
+          npm ci
+          node scripts/vault.mjs deploy "$WASM_URL" "$WASM_SHA256"
+          node scripts/vault.mjs call '{"op":"${{ inputs.call }}"}'

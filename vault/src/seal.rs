@@ -48,6 +48,7 @@ pub fn open(vault_secret: &[u8; 32], blob_b64: &str) -> Result<Vec<u8>, String> 
 }
 
 /// Seal with given ephemeral secret and nonce (the browser does this; here for tests).
+#[allow(dead_code)] // used by tests and by the browser mirror
 pub fn seal_with(vault_pub: &[u8; 32], eph_secret: &[u8; 32], nonce: &[u8; 12], plaintext: &[u8]) -> String {
     let eph = StaticSecret::from(*eph_secret);
     let eph_pub = PublicKey::from(&eph).to_bytes();

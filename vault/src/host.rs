@@ -120,9 +120,10 @@ fn post(url: &str, content_type: &str, body: &[u8]) -> Result<Vec<u8>, String> {
         .body(body)
         .send()
         .map_err(|e| format!("{url}: {e}"))?;
+    let status = r.status();
     let raw = r.body().map_err(|e| e.to_string())?;
-    if !(200..300).contains(&r.status()) {
-        return Err(format!("HTTP {}: {}", r.status(), String::from_utf8_lossy(&raw).chars().take(120).collect::<String>()));
+    if !(200..300).contains(&status) {
+        return Err(format!("HTTP {}: {}", status, String::from_utf8_lossy(&raw).chars().take(120).collect::<String>()));
     }
     Ok(raw)
 }
