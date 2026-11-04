@@ -1,0 +1,29 @@
+name: NEAR testnet upgrade
+
+# Adds a quantum-safe ML-DSA-65 key to a NEAR testnet account and signs with it.
+# Testnet only. Credentials come from repository secrets; see scripts/near-upgrade.mjs.
+on:
+  workflow_dispatch:
+    inputs:
+      retire_classic:
+        description: "Also delete the classic Ed25519 key (type yes)"
+        default: "no"
+
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Upgrade the testnet account
+        env:
+          NEAR_TESTNET_SEED: ${{ secrets.NEAR_TESTNET_SEED }}
+          NEAR_TESTNET_ACCOUNT: ${{ secrets.NEAR_TESTNET_ACCOUNT }}
+          NEAR_TESTNET_PRIVATE_KEY: ${{ secrets.NEAR_TESTNET_PRIVATE_KEY }}
+          RETIRE_CLASSIC: ${{ inputs.retire_classic == 'yes' && '1' || '0' }}
+        run: node scripts/near-upgrade.mjs
