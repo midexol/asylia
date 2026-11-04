@@ -4,7 +4,24 @@
 // Testnet only. Uses the account derived from NEAR_TESTNET_SEED (see testnet-account.mjs).
 import { appendFileSync } from "node:fs";
 import * as near from "@fastnear/api";
+import { chacha20poly1305 } from "@noble/ciphers/chacha";
+import { x25519 } from "@noble/curves/ed25519";
+import { hkdf } from "@noble/hashes/hkdf";
+import { sha256 } from "@noble/hashes/sha2";
+import { randomBytes } from "@noble/hashes/utils";
+import { base64 } from "@scure/base";
 import { testnetAccount } from "./testnet-account.mjs";
+
+/** Same scheme as lib/vault/seal.ts and vault/src/seal.rs. */
+function sealFor(vaultPublicB64, escape) {
+  const vaultPub = base64.decode(vaultPublicB64);
+  const eph = randomBytes(32);
+  const nonce = randomBytes(12);
+  const ephPub = x25519.getPublicKey(eph);
+  const key = hkdf(sha256, x25519.getSharedSecret(eph, vaultPub), new Uint8Array([...ephPub, ...vaultPub]), new TextEncoder().encode("lifeboat-vault-v1"), 32);
+  const ct = chacha20poly1305(key, nonce, new TextEncoder().encode("lifeboat-escape")).encrypt(new TextEncoder().encode(JSON.stringify(escape)));
+  return base64.encode(new Uint8Array([...ephPub, ...nonce, ...ct]));
+}
 
 const NETWORK = "testnet";
 const OUTLAYER = "outlayer.testnet";
@@ -50,6 +67,24 @@ function output(result) {
   return { failures, value: decoded.at(-1) ?? null, logs: (r?.receipts_outcome ?? []).flatMap((o) => o?.outcome?.logs ?? []) };
 }
 
+/** Run the vault once and return its parsed JSON answer. */
+async function run(input) {
+  const est = decodeView(
+    await near.view({ contractId: OUTLAYER, methodName: "estimate_execution_cost", args: { resource_limits: LIMITS, input_len: input.length }, network: NETWORK }),
+  );
+  const deposit = ((BigInt(String(est ?? NEAR(0.05))) * 15n) / 10n).toString();
+  const r = await call(
+    "request_execution",
+    { source: { Project: { project_id: projectId, version_key: null } }, resource_limits: LIMITS, input_data: input, response_format: "Json" },
+    deposit,
+  );
+  const o = output(r);
+  log(`- \`${input.slice(0, 48)}${input.length > 48 ? "…" : ""}\` → \`${o.value ?? "(nothing)"}\` ([tx](https://testnet.nearblocks.io/txns/${txHash(r)}))`);
+  if (o.failures.length) log(`  - Failure: ${o.failures.join("; ")}`);
+  const parsed = o.value ? JSON.parse(o.value) : null;
+  return parsed?.output ?? parsed;
+}
+
 const [cmd, a, b] = process.argv.slice(2);
 try {
   if (cmd === "deploy") {
@@ -80,8 +115,20 @@ try {
     if (o.failures.length) log(`- Failure: ${o.failures.join("; ")}`);
     log(`- Vault answered: \`${o.value ?? "(nothing)"}\``);
     if (!o.value) log(`- Logs: ${o.logs.slice(-5).join(" | ").slice(0, 600)}`);
+  } else if (cmd === "selftest") {
+    // Seal a harmless test escape (testnet, a transaction that cannot be valid) and walk every op.
+    log(`### Vault self-test on OutLayer testnet`);
+    const pk = await run('{"op":"pubkey"}');
+    const pubkey = pk?.pubkey;
+    if (!pubkey) throw new Error("the vault did not return its public key");
+    const escape = { id: `selftest-${Date.now()}`, chain: "bitcoin", network: "testnet", txs: ["00".repeat(60)] };
+    await run(JSON.stringify({ op: "seal", sealed: sealFor(pubkey, escape) }));
+    await run('{"op":"status"}');
+    await run('{"op":"release","network":"mainnet"}');
+    const tampered = sealFor(pubkey, escape).replace(/.$/, (c) => (c === "A" ? "B" : "A"));
+    await run(JSON.stringify({ op: "seal", sealed: tampered }));
   } else {
-    throw new Error("usage: vault.mjs deploy <url> <sha256> | call '<json>'");
+    throw new Error("usage: vault.mjs deploy <url> <sha256> | call '<json>' | selftest");
   }
 } catch (e) {
   log(`Failed: ${e instanceof Error ? e.message : String(e)}`);

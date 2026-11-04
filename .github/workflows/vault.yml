@@ -10,9 +10,9 @@ on:
       deploy:
         description: "Publish and register on OutLayer testnet (type yes)"
         default: "no"
-      call:
-        description: "After deploying, call the vault with this op (pubkey, status)"
-        default: "pubkey"
+      selftest:
+        description: "Run the vault self-test on testnet (type yes)"
+        default: "no"
 
 permissions:
   contents: write
@@ -67,4 +67,16 @@ jobs:
         run: |
           npm ci
           node scripts/vault.mjs deploy "$WASM_URL" "$WASM_SHA256"
-          node scripts/vault.mjs call '{"op":"${{ inputs.call }}"}'
+          node scripts/vault.mjs call '{"op":"pubkey"}'
+      - uses: actions/setup-node@v4
+        if: inputs.selftest == 'yes' && inputs.deploy != 'yes'
+        with:
+          node-version: "22"
+      - name: Self-test on OutLayer testnet
+        if: inputs.selftest == 'yes'
+        working-directory: .
+        env:
+          NEAR_TESTNET_SEED: ${{ secrets.NEAR_TESTNET_SEED }}
+        run: |
+          [ -d node_modules ] || npm ci
+          node scripts/vault.mjs selftest
