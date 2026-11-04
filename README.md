@@ -2,153 +2,212 @@
 
 Lifeboat gets your crypto out before a quantum computer can steal it, without ever holding your coins.
 
-- **The escape is yours.** You sign it in your own wallet, to a fresh address whose key has never been seen.
-- **It is sealed away.** It goes into an OutLayer TEE that nobody can read.
-- **A watchman releases it.** It watches old wallets with exposed keys, and when they start moving like an attack, it sends the escapes out.
-- **NEAR accounts are fixed in place.** They get a quantum-safe ML-DSA-65 key instead.
+A large enough quantum computer can work out a wallet's private key from its public key, and millions of wallets have already published theirs. Lifeboat does four things:
 
-Built for [NEAR HACKATHON](https://nearhackathon.com), November 2026. Tracks: `security`, `privacy`, `open`.
+1. **Scan:** finds which of your Bitcoin, Ethereum, BNB Chain and NEAR wallets are exposed, and how much is in them.
+2. **Seal:** helps you sign an *escape* in your own wallet: a transaction that moves everything to a fresh address whose key has never been seen. The escape is encrypted in your browser and sealed inside a vault running in an OutLayer enclave on NEAR.
+3. **Upgrade NEAR:** walks you through adding a quantum-safe ML-DSA-65 key to a NEAR account: same account, same coins, nothing moves.
+4. **Watch:** a watchman tracks 60 Bitcoin block rewards from 2009 whose keys have always been public. If they start moving like an attack, the vault broadcasts every escape. The vault can release escapes, but it can never change where they pay.
+
+Built at [NEAR HACKATHON](https://nearhackathon.com), November 2026. **Tracks:** `security`, `privacy`, `open`.
 
 **Other project by the same entrant:** [Assayer](https://github.com/midexol/assayer), which measures tokenized-stock prices across chains. The two projects are independent and share no code.
 
-## Why this exists
+## Proof on chain (NEAR testnet)
 
-A large enough quantum computer can derive a private key from its public key.
-
-| Chain | When the public key becomes visible |
+| What | Where |
 | --- | --- |
-| Bitcoin | After the first spend. Taproot addresses always |
-| Ethereum, BNB Chain | After the first outgoing transaction |
-| NEAR | Always, but since network upgrade 2.13 an account can add an ML-DSA-65 key without moving funds |
+| A NEAR account with a quantum-safe ML-DSA-65 key beside its classic key | [`lifeboat-f86cd6e7d4.testnet`](https://testnet.nearblocks.io/address/lifeboat-f86cd6e7d4.testnet) |
+| A transaction signed by that ML-DSA-65 key (3,309-byte signature) | [`DVAmKNmf…YZgL2o`](https://testnet.nearblocks.io/txns/DVAmKNmf8qmjGJ4fQAnyMGc4AVgjxZTbZPVbwCYZgL2o) |
+| The vault registered on OutLayer as `lifeboat-f86cd6e7d4.testnet/lifeboat-vault` | [`91xhjC7i…PeQApW`](https://testnet.nearblocks.io/txns/91xhjC7iNH23XCC1HqQ6iSLy9TnuYKKvGcR1wBPeQApW) |
+| The vault answering inside the enclave with its own public key | [`JAnUUC85…53Ud9M`](https://testnet.nearblocks.io/txns/JAnUUC85rANQpvVZBrBVGbPG8H2qSmjPpSBcSB53Ud9M) |
+| The website sealing an encrypted escape into the vault | [`47idhuMV…c589ws`](https://testnet.nearblocks.io/txns/47idhuMV61qirbBhT7ocXyQ7PxbL3yVJBq4yP4c589ws) |
+| The vault checking all 60 canaries from inside the enclave, finding them calm, and refusing to release | [`GTRxvhPr…n4h2ZK`](https://testnet.nearblocks.io/txns/GTRxvhPrshfR2HdRfSB6u7bTQbuUWC55BVePSpn4h2ZK) |
 
-Routing coins through NEAR Chain Signatures would not help. The MPC network signs with classical keys and has no post-quantum timeline yet. So Lifeboat never takes custody: the rescue is signed by the owner before it is sealed, and can only pay the owner's own addresses.
+Each of these is reproducible from the workflows in [`.github/workflows`](.github/workflows): `NEAR testnet upgrade`, `Vault` (with `selftest=yes`) and `Site end-to-end`.
+
+## Try it
+
+Needs Node 22.
+
+```bash
+git clone https://github.com/midexol/lifeboat && cd lifeboat
+npm install
+npm test        # 87 tests, all offline
+npm run dev     # http://localhost:3000
+```
+
+- **Open `/`.** You should see the landing page: the problem, the four steps, and one button, **Check my wallets**.
+- **Open `/scan`**, paste `lifeboat-f86cd6e7d4.testnet`, and press **Check them**. You should see "Already upgraded": the scanner read the account's keys from NEAR testnet and found the quantum-safe one.
+- **Paste a Bitcoin, Ethereum or BNB Chain address that has sent coins before.** You should see "At risk", the dollars in it, and a **Seal an escape** button. An address that has only ever received shows "Safe for now".
+- **Open `/watch`.** You should see "Calm" and all 60 canaries, checked live against mempool.space. Press **Show a simulated attack**: eight canaries turn to "Moved", the level becomes "Would release", and the screen states that the attack is simulated and nothing was released.
+- **Open `/upgrade`** and enter `lifeboat-f86cd6e7d4.testnet`. You should see "is quantum-safe" and both keys. For an account without the new key, it shows the three NEAR CLI commands that add one.
+- **Open `/seal`.** The full Bitcoin and EVM escape walk-throughs are below.
+
+None of this needs keys or environment variables, except sealing into the vault (see "Run it yourself").
+
+## How NEAR is used
+
+- **Quantum-safe keys (protocol 2.13, ML-DSA-65).**
+  - NEAR is the one chain here that can be fixed in place. Lifeboat adds an ML-DSA-65 key to an existing account, signed by the classic key, then signs with the new key: [`scripts/near-upgrade.mjs`](scripts/near-upgrade.mjs), using FastNEAR's `@fastnear/ml-dsa-65`.
+  - The Upgrade screen checks any account's keys live and gives the NEAR CLI commands (`near-cli-rs` 0.29+). The key is generated on the owner's computer, never on a website.
+- **OutLayer enclave (TEE) on NEAR.** The vault ([`vault/`](vault), Rust, `wasm32-wasip2`):
+  - makes its own encryption key inside the enclave;
+  - opens escapes that owners encrypted to it in their browsers;
+  - keeps them in OutLayer's encrypted storage;
+  - checks the canaries itself, and broadcasts escapes itself only when its rule says so.
+
+  It is called through `request_execution` on `outlayer.testnet`.
+- **NEAR AI Cloud.** When three or more canaries move in a day, the watchman asks a model on NEAR AI Cloud whether the moves look like an attack ([`lib/watchman/judge.ts`](lib/watchman/judge.ts)). The model sees counts and fees, never addresses. It can confirm an alarm, but it can't start one or block a release.
+- **Why not Chain Signatures?** NEAR's MPC network signs with classical keys and has no post-quantum timeline yet. Lifeboat therefore never takes custody of coins.
+
+## Why each track
+
+- **`security`:** an attack-detecting agent whose powers are deliberately narrow. It can release escapes the owners signed themselves, but it can never redirect them. Every signed escape is checked before sealing:
+  - it pays only the safe address;
+  - it spends exactly the planned coins;
+  - it keeps the planned fee;
+  - it is signed by the exposed wallet.
+
+  Tampered escapes are refused in the browser flow and in the enclave.
+- **`privacy`:** escapes are encrypted on the owner's device to a key that exists only inside the enclave. Neither the Lifeboat server nor anyone reading NEAR can see them. The AI judgement receives no addresses.
+- **`open`:** quantum readiness across Bitcoin, Ethereum, BNB Chain and NEAR in one flow, built to be usable by someone who has never heard of a public key.
+
+## The problem
+
+| Chain | When the public key becomes visible | What Lifeboat does |
+| --- | --- | --- |
+| Bitcoin | After the first spend. Taproot always | Escape to a fresh address |
+| Ethereum, BNB Chain | After the first outgoing transaction | Escape, including USDC and USDT |
+| NEAR | Always: access keys are public | Add a quantum-safe key in place |
+
+Project Eleven [estimates about $600B of Bitcoin](https://thequantuminsider.com/2025/06/19/project-eleven-raises-6-million-to-secure-digital-assets-against-quantum-threats/) sits in wallets whose keys are already public.
+
+## How each step works
+
+### Scan
+
+1. Each pasted line is classified offline, with checksums verified:
+   - Bitcoin P2PKH, P2SH, P2WPKH, P2WSH, P2TR (BIP-173 and BIP-350)
+   - EVM (EIP-55)
+   - NEAR accounts
+2. Read-only public endpoints supply the facts: mempool.space, publicnode RPC, NEAR RPC and CoinGecko.
+3. The verdict depends on the chain:
+   - **Bitcoin, Ethereum, BNB Chain:** *exposed* if the address has spent (Bitcoin) or has a nonce above zero (EVM). Taproot is always exposed.
+   - **NEAR:** *upgrade* unless the account already has an ML-DSA key.
+   - **Any chain:** *empty* when it holds nothing. A failed lookup shows "Couldn't check" and never counts as safe.
+
+All network calls sit in [`lib/sources.ts`](lib/sources.ts) behind an injectable `fetch`, so the tests run offline.
+
+### Seal: Bitcoin
+
+1. On `/scan`, an exposed `tb1q…` (testnet) address shows **Seal an escape**. Click it, paste a brand-new address from your wallet as the safe address, and press **Prepare my escape**. A safe address that has been used before is refused.
+2. You get an unsigned PSBT that sends every coin to the safe address. Its fee cap is five times today's fastest fee by default ("High"), with a floor.
+3. Sign it in your own wallet (Sparrow, Electrum), paste it back, and press **Check my escape**.
+   - **A good escape:** "Your escape is ready".
+   - **A bad one is refused** with the reason: it pays anyone else, adds an output, spends other coins, lowers the fee, or isn't signed.
+4. Press **Seal into the vault**. The escape is encrypted in your browser and sealed. You get a link to the vault's record on NEAR testnet.
+
+Code: [`lib/btc/rescue.ts`](lib/btc/rescue.ts), [`components/Sealer.tsx`](components/Sealer.tsx).
+
+### Seal: Ethereum and BNB Chain
+
+1. Paste an exposed `0x` address, choose the network, and choose **Testnet**.
+2. You get one `cast mktx` command per step. On mainnet, any USDC or USDT goes first. The rest of the native coin goes last, after every fee is reserved.
+3. Run each command on your own computer. `cast` signs without sending, which browser wallets such as MetaMask can't do. Paste the results back.
+4. Lifeboat checks the signer, chain, nonces, recipients (including inside token transfers) and fee caps.
+
+Code: [`lib/evm/rescue.ts`](lib/evm/rescue.ts), [`components/EvmEscape.tsx`](components/EvmEscape.tsx).
+
+### Upgrade NEAR
+
+1. Enter an account. The screen reads its keys from NEAR and marks each one classic or quantum-safe.
+2. If no quantum-safe key is there, it gives three commands:
+   1. install `near-cli-rs`
+   2. sign in with your wallet
+   3. `near account add-key <account> grant-full-access autogenerate-new-keypair --signature-scheme ml-dsa-65 save-to-keychain …`
+3. Press **Check again** to confirm the new key on chain.
+
+Code: [`components/Upgrade.tsx`](components/Upgrade.tsx), [`lib/near/upgrade.ts`](lib/near/upgrade.ts).
+
+### Watch
+
+The canaries are the block rewards from Bitcoin blocks 1 to 61, mined in January 2009 (block 9's was spent long ago). They hold 3,000 BTC. They were paid to bare public keys and have never moved. [`scripts/find-canaries.mjs`](scripts/find-canaries.mjs) rebuilds the list.
+
+How it decides:
+
+1. **One moves in a day:** watch closely.
+2. **Three move in a day:** alarm, and ask NEAR AI Cloud. A "yes" with at least 70% confidence releases.
+3. **Eight move in a day:** release, whatever the judgement says.
+
+Code: [`lib/watchman`](lib/watchman), [`components/Watch.tsx`](components/Watch.tsx).
+
+### The vault
+
+| Request | What the vault does inside the enclave |
+| --- | --- |
+| `pubkey` | Makes an X25519 key from enclave randomness on first use, stores the secret half in OutLayer's encrypted storage, and returns the public half. |
+| `seal` | Opens an escape encrypted to that key: X25519, then HKDF-SHA256, then ChaCha20-Poly1305 (mirrored in [`lib/vault/seal.ts`](lib/vault/seal.ts)). It checks the escape and stores it. A tampered blob is refused. |
+| `status` | Counts only. |
+| `release` | Checks the 60 canaries from mempool.space. Only at eight or more recent moves does it broadcast every sealed escape for that network, through mempool.space or `eth_sendRawTransaction`. |
+
+Whoever calls `release` can only ask; the vault answers by its rule. Code: [`vault/src`](vault/src), with the rules unit-tested natively (`cd vault && cargo test`).
 
 ## Status
 
-This table is updated as work lands. Anything not marked built is not claimed.
+Anything not listed as built is not claimed.
 
-| Part | State | Where |
-| --- | --- | --- |
-| Exposure check: Bitcoin (all address types, mainnet and testnet), Ethereum, BNB Chain, NEAR | built, tested | [`lib/address.ts`](lib/address.ts), [`lib/exposure.ts`](lib/exposure.ts), [`lib/sources.ts`](lib/sources.ts), tests beside each |
-| Scan screen and `POST /api/scan` | built | [`components/Scanner.tsx`](components/Scanner.tsx), [`app/api/scan/route.ts`](app/api/scan/route.ts) |
-| Landing page | built | [`app/page.tsx`](app/page.tsx) |
-| Spikes: ML-DSA-65 keys, OutLayer sealing, HOT Wallet | researched; ML-DSA keygen, sign and verify checked locally | [`docs/spikes.md`](docs/spikes.md), [`scripts/spike-mldsa.mjs`](scripts/spike-mldsa.mjs) |
-| Seal, Bitcoin: build an unsigned sweep (PSBT) of every coin to a fresh address at a high fee cap; the owner signs in their own wallet; Lifeboat checks the signed escape pays only the safe address | built, tested with real signatures | [`lib/btc/rescue.ts`](lib/btc/rescue.ts), [`app/api/rescue/btc`](app/api/rescue/btc), [`components/Sealer.tsx`](components/Sealer.tsx) |
-| Vault in an OutLayer TEE: holds escapes encrypted to an enclave-made key; releases only when its own check of the canaries says eight or more moved in a day, then broadcasts them itself | built, deployed and self-tested on OutLayer testnet: [`lifeboat-f86cd6e7d4.testnet/lifeboat-vault`](https://testnet.nearblocks.io/txns/91xhjC7iNH23XCC1HqQ6iSLy9TnuYKKvGcR1wBPeQApW) | [`vault/`](vault), [`lib/vault/seal.ts`](lib/vault/seal.ts), [`scripts/vault.mjs`](scripts/vault.mjs), [`.github/workflows/vault.yml`](.github/workflows/vault.yml) |
-| The Seal screen seals checked testnet escapes into the vault: encrypted in the browser, carried by `POST /api/vault/seal`, recorded on NEAR testnet; real-coin escapes are download-only while the vault is on testnet | built; end-to-end run through the site sealed a test escape ([transaction](https://testnet.nearblocks.io/txns/47idhuMV61qirbBhT7ocXyQ7PxbL3yVJBq4yP4c589ws)) | [`components/VaultSeal.tsx`](components/VaultSeal.tsx), [`app/api/vault/seal`](app/api/vault/seal), [`lib/vault`](lib/vault), [`.github/workflows/site-e2e.yml`](.github/workflows/site-e2e.yml) |
-| Seal, Ethereum and BNB Chain: USDC and USDT transfers first, then a sweep of the native coin, nonces in sequence, high fee caps; signed offline (Foundry `cast mktx`); Lifeboat checks the signer, chain, nonces, recipient and fees | built, tested with real signatures | [`lib/evm/rescue.ts`](lib/evm/rescue.ts), [`app/api/rescue/evm`](app/api/rescue/evm), [`components/EvmEscape.tsx`](components/EvmEscape.tsx) |
-| Upgrade NEAR, testnet run: create or reuse a testnet account, add an ML-DSA-65 key signed by the classic key, then sign a transaction with the ML-DSA key itself (optionally retire the classic key) | built, run on testnet: [`lifeboat-f86cd6e7d4.testnet`](https://testnet.nearblocks.io/address/lifeboat-f86cd6e7d4.testnet) holds an ML-DSA-65 key beside its Ed25519 key, and [this transaction](https://testnet.nearblocks.io/txns/DVAmKNmf8qmjGJ4fQAnyMGc4AVgjxZTbZPVbwCYZgL2o) was signed with the ML-DSA-65 key | [`scripts/near-upgrade.mjs`](scripts/near-upgrade.mjs), [`.github/workflows/near-testnet.yml`](.github/workflows/near-testnet.yml) |
-| Upgrade NEAR screen: one button in the browser, with a wallet | planned | |
-| Watchman: 60 canaries (unspent 2009 block rewards paid to bare public keys, 3,000 BTC), checked live; rules raise watch, alarm and release levels; NEAR AI Cloud gives a second opinion on an alarm but can never block a release or cause one alone; Watch screen with a labelled simulated attack | built, tested | [`lib/watchman`](lib/watchman), [`data/canaries.json`](data/canaries.json), [`scripts/find-canaries.mjs`](scripts/find-canaries.mjs), [`app/api/watch/status`](app/api/watch/status), [`components/Watch.tsx`](components/Watch.tsx) |
-
-| Simulated attack on testnet, end to end | planned | |
-
-## How the exposure check works
-
-1. Each pasted line is classified offline, with checksums verified:
-   - Bitcoin P2PKH, P2SH, P2WPKH, P2WSH or P2TR (bech32 and bech32m per BIP-173/350)
-   - an EVM address (EIP-55)
-   - a NEAR account
-2. Read-only public endpoints supply the facts: mempool.space for Bitcoin, publicnode RPC for Ethereum and BNB Chain, NEAR RPC, and CoinGecko for prices.
-3. The verdict depends on the chain:
-   - **Bitcoin, Ethereum, BNB Chain:** *exposed* if the address has ever spent (Bitcoin) or has a nonce above zero (EVM). Taproot is always exposed.
-   - **NEAR:** *upgrade* unless an ML-DSA key is already on the account.
-   - **Any chain:** *empty* if it holds nothing, and *unknown* if a lookup failed. A failed lookup never counts as safe.
-
-All network calls sit in `lib/sources.ts` behind an injectable `fetch`, so the tests run offline.
-
-## Try the Bitcoin escape on testnet
-
-1. Run `npm run dev` and open `/scan`. Paste a Bitcoin testnet address (`tb1q...`) that holds coins and has sent before. You should see "At risk" and a **Seal an escape** button.
-2. Click it. In your wallet, make a brand-new receiving address, paste it as the safe address, and press **Prepare my escape**.
-   - A safe address that was used before is refused.
-   - You get an unsigned PSBT that sends every coin to the safe address at a fee well above today's.
-3. Load the PSBT into a testnet wallet that can sign PSBTs (Sparrow, Electrum), sign it, paste the result back, and press **Check my escape**.
-   - **A good escape:** "Your escape is ready", with its ID and a file to download.
-   - **A bad one is refused**, with the reason. That covers an escape that pays anyone else, adds an output, spends other coins, lowers the fee or isn't signed.
-
-Supported for escapes:
-
-- **Single-key addresses:** P2WPKH (`bc1q`/`tb1q`) and P2PKH (`1...`/`m...`), both tested with real signatures. P2TR (`bc1p`) builds, but signing with a real Taproot wallet is not tested yet; the wallet adds its own key details when signing.
-- **Not yet:** multisig.
-- **Escapes use replace-by-fee,** so one can be re-signed at a higher fee later.
-
-**Limit, stated plainly:** an escape is a race. If an attacker has already derived the private key, they can try to outbid the escape with their own transaction once it is broadcast. That is why escapes carry a fee cap far above today's, and why the watchman is meant to fire on the first signs of an attack (old exposed wallets moving), not after your own coins move.
-
-## Try the Ethereum or BNB Chain escape on testnet
-
-1. Open `/seal`, paste an exposed `0x` address, then choose **Ethereum** or **BNB Chain** and **Testnet** (Sepolia, or BNB Chain testnet). Paste a fresh `0x` address as the safe address.
-2. Press **Prepare my escape**. You get one `cast mktx` command per step:
-   - on mainnet, any USDC or USDT goes first;
-   - the rest of the native coin goes last, after reserving every fee.
-3. Run each command on your own machine. `cast` signs without sending.
-4. Paste the signed results, one per line, and press **Check my escape**.
-   - **A good escape:** "Your escape is ready".
-   - **A bad one is refused**, with the reason. That covers a wrong signer, a wrong chain, a missing step, a changed recipient or a lower fee cap.
-
-Browser wallets such as MetaMask cannot sign a transaction without sending it, which is why escapes are signed offline.
-
-**On Ethereum, a little dust stays behind.** The sweep reserves the full fee cap, and whatever the fee doesn't use stays in the old address. On BNB Chain the sweep empties the address exactly.
-
-## The watchman
-
-**What it watches.** The canaries are the block rewards from Bitcoin blocks 1 to 61 (block 9's has been spent), mined in January 2009. They were paid to bare public keys, so their keys have been public for 17 years, and none has ever moved. If a quantum computer can derive private keys, these are the easiest coins to take. `scripts/find-canaries.mjs` rebuilds the list from mempool.space.
-
-**How it decides:**
-
-1. **One moves in a day:** watch closely. Owners sometimes move old coins.
-2. **Three move in a day:** raise the alarm and ask a model on NEAR AI Cloud whether the moves look like an attack. A "yes" with at least 70% confidence releases.
-3. **Eight move in a day:** release, whatever the judgement says.
-
-**What the AI can and can't do.** It sees counts and fees, never addresses. It can confirm an alarm, but it can't start one and it can't block a release.
-
-**Try it.** Open `/watch` to see the live state, checked against mempool.space every minute. Press **Show a simulated attack** to see eight canaries move: the screen says plainly that the attack is simulated, and nothing is released.
-
-## The vault
-
-The vault is a small Rust program ([`vault/`](vault)) that runs inside OutLayer's trusted enclave on NEAR. It answers four requests:
-
-| Request | What the vault does |
+| Part | State |
 | --- | --- |
-| `pubkey` | Makes an X25519 key from enclave randomness on first use, keeps the secret half in OutLayer's encrypted storage, and returns only the public half. |
-| `seal` | Takes an escape encrypted to that key in the owner's browser ([`lib/vault/seal.ts`](lib/vault/seal.ts)), opens it inside the enclave, checks it and stores it. The signed transactions never appear in the clear on chain. |
-| `status` | Returns counts only. |
-| `release` | Checks the 60 canaries itself, from mempool.space. Only if eight or more moved in the last day does it broadcast every sealed escape for that network: Bitcoin through mempool.space, Ethereum and BNB Chain through `eth_sendRawTransaction`. |
+| Scan: exposure check for Bitcoin, Ethereum, BNB Chain, NEAR | Built and tested. Checked live in the `Site end-to-end` workflow |
+| Seal, Bitcoin: build, sign in your own wallet, check | Built and tested with real signatures |
+| Seal, Ethereum and BNB Chain, with USDC and USDT | Built and tested with real signatures |
+| Vault in an OutLayer enclave: key, seal, status, release by rule | Built. Deployed and self-tested on OutLayer testnet |
+| Sealing into the vault from the website | Built. Run end to end on testnet |
+| Upgrade NEAR: ML-DSA-65 key added and used on chain | Done on testnet ([proof above](#proof-on-chain-near-testnet)) |
+| Upgrade NEAR screen: live key check, CLI commands, on-chain confirmation | Built. Checked live against the testnet account |
+| Watchman: 60 canaries, rules, NEAR AI Cloud second opinion, labelled simulated attack | Built and tested. Checked live against mainnet |
+| A full simulated attack on testnet, in which canary coins we control move and the vault broadcasts a real testnet escape | Not built yet |
 
-Whoever calls `release` can only ask; the vault answers by its rule. An escape can only pay the address its owner signed it to, so even a wrongful release moves coins only to their owner's safe address.
+## Limits
 
-**Self-test on OutLayer testnet, 4 November** (`Vault` workflow with `selftest=yes`):
+- **The vault is on testnet.** It accepts testnet escapes only. Real-coin escapes can be prepared and checked, then downloaded, but not sealed.
+- **Project upgrades:** the vault's key lives in project storage, so a later version deployed by the project's owner could read sealed escapes. That would still only let it release early, never redirect coins. Pinning the key to one build is the next step.
+- **The vault releases on the rule of eight alone.** The NEAR AI judgement runs in the watchman, not yet inside the enclave.
+- **An escape is a race.** If an attacker has already derived a key, they can try to outbid the escape once it is broadcast. Escapes carry high fee caps, and the watchman fires on the oldest coins moving, before yours do.
+- **Escapes go stale.** They cover the coins that were there when they were signed. Coins arriving later, or the wallet sending anything else, mean a new escape is needed. The screen says so.
+- **The Upgrade NEAR screen uses the NEAR CLI.** No browser wallet was confirmed to add ML-DSA-65 keys yet. HOT Wallet login is not built. See [`docs/spikes.md`](docs/spikes.md).
+- **The scanner can't see bare-public-key (P2PK) Bitcoin outputs** under their derived address. A 2009-style P2PK holding can show "Safe for now".
+- **Address types:** Taproot escapes build but are untested with a real Taproot wallet. Multisig and Solana are not supported.
 
-1. `pubkey` returned the vault's key.
-2. A test escape was encrypted and sealed. `status` then reported 1 sealed.
-3. `release` on mainnet checked all 60 canaries from inside the enclave, found them calm, and released nothing.
-4. A tampered blob was refused.
+## Run it yourself
 
-The transaction for each step is linked in that run's summary.
-
-**Limits:**
-
-- **Project upgrades:** the vault's key lives in project storage. A later version of the project, deployed by its owner, could read sealed escapes. Pinning the key to one build is the next hardening step.
-- **The AI judgement:** it runs in the watchman, not yet inside the vault. The vault releases on the rule of eight alone.
-
-## Run it
-
-```bash
-npm install
-npm test            # 81 tests, offline
-npm run dev         # http://localhost:3000
-npm run spike:mldsa # make an ML-DSA-65 key locally, sign and verify
-```
-
-No keys or environment variables are needed for the scanner.
-
-**To seal into the vault from the site,** set `NEAR_TESTNET_SEED` on the server: the same value as the repository secret, for example in Vercel's environment variables. It pays for the vault's runs from the Lifeboat testnet account. Escapes are encrypted in the browser before they reach the server.
-
-## Renaming
+| Variable | Needed for |
+| --- | --- |
+| none | Scan, Seal (prepare and check), Upgrade NEAR, Watch |
+| `NEAR_TESTNET_SEED` | Sealing into the vault from the site. Use the same value as the repository secret. It derives the testnet account that pays for vault runs. |
+| `NEARAI_API_KEY` (optional) | The watchman's NEAR AI Cloud judgement on an alarm. `NEARAI_MODEL` is also optional. |
 
 The product name lives only in [`lib/brand.ts`](lib/brand.ts).
 
+## Repo map
+
+| Path | What |
+| --- | --- |
+| [`app/`](app) | Next.js pages and API routes: `/scan`, `/seal`, `/upgrade`, `/watch`; `api/scan`, `api/rescue/{btc,evm}`, `api/vault/seal`, `api/near/keys`, `api/watch/status` |
+| [`components/`](components) | Screens: Scanner, Sealer, EvmEscape, VaultSeal, Upgrade, Watch, Steps |
+| [`lib/`](lib) | Address parsing, exposure verdicts, Bitcoin and EVM escapes, watchman rules and judgement, vault encryption and calls, NEAR upgrade |
+| [`vault/`](vault) | The OutLayer enclave program (Rust) |
+| [`data/`](data) | Canary lists |
+| [`scripts/`](scripts) | NEAR testnet upgrade, vault deploy, call and self-test, canary finder, ML-DSA spike |
+| [`docs/spikes.md`](docs/spikes.md) | What was tested, and what was learned about ML-DSA keys, OutLayer and HOT Wallet |
+
 ## Safety
 
-- Nothing in this repo signs mainnet transactions or holds keys.
-- The demo will run on testnet only, and the attack in it will be labelled as simulated.
+- Nothing in this repo holds users' keys or signs on their behalf.
+- Every on-chain action shown here ran on NEAR testnet, from a testnet account derived from a repository secret.
+- The attack on the Watch screen is labelled as simulated.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
