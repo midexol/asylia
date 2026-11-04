@@ -1,0 +1,22 @@
+name: Probe
+
+# Manual diagnostics that need the open internet (the build sandbox can't reach chains).
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: "canaries"
+        default: canaries
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Find canary coins
+        if: inputs.task == 'canaries'
+        run: node scripts/find-canaries.mjs 400 60
