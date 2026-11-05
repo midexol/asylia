@@ -88,7 +88,7 @@ export function Upgrade() {
       <header className="wrap app-top">
         <Link href="/" className="brand">
           <Mark />
-          <span>{NAME.toUpperCase()}</span>
+          <span>{NAME}</span>
         </Link>
       </header>
 
