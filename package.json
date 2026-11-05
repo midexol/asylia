@@ -20,7 +20,7 @@
     "@noble/hashes": "^1.8.0",
     "@scure/base": "^1.2.6",
     "bitcoinjs-lib": "^6.1.7",
-    "next": "15.5.4",
+    "next": "15.5.9",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "viem": "^2.21.54"
