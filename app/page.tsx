@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Mark } from "@/components/Mark";
+import { Buoy, Mark } from "@/components/Mark";
 import { NAME, REPO, SISTER, TAGLINE } from "@/lib/brand";
 
 const STEPS = [
@@ -28,6 +28,7 @@ export default function Landing() {
             </span>
           </header>
           <div className="hero-center">
+            <Buoy className="buoy" />
             <h1 className="wordmark">{NAME.toUpperCase()}</h1>
             <p className="tagline">{TAGLINE}</p>
             <Link href="/scan" className="btn">
@@ -51,7 +52,7 @@ export default function Landing() {
         </div>
         <div className="chains arrive">
           {CHAINS.map(([name, note]) => (
-            <div key={name}>
+            <div key={name} className={name === "NEAR" ? "safe" : "exposed"}>
               <b>{name}</b>
               <span>{note}</span>
             </div>
@@ -63,7 +64,7 @@ export default function Landing() {
         <h2 className="display arrive">Four steps. No coins handed over.</h2>
         <ol className="how arrive">
           {STEPS.map(([title, text], i) => (
-            <li key={title}>
+            <li key={title} className={`step-${i + 1}`}>
               <span className="n">{i + 1}</span>
               <h3>{title}</h3>
               <p>{text}</p>

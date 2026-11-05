@@ -7,3 +7,21 @@ export function Mark({ size = 26 }: { size?: number }) {
     </svg>
   );
 }
+
+/** A lifebuoy: ivory ring, eight coral bands. Flat colours only. */
+export function Buoy({ className }: { className?: string }) {
+  const r = 74;
+  const c = 2 * Math.PI * r;
+  return (
+    <svg className={className} viewBox="-8 -8 216 216" aria-hidden="true">
+      <circle cx="100" cy="100" r={r} fill="none" stroke="#F2EFE8" strokeWidth="44" />
+      <circle
+        cx="100" cy="100" r={r} fill="none" stroke="#E58363" strokeWidth="44"
+        strokeDasharray={`${c / 8} ${c / 8}`} transform="rotate(-22.5 100 100)"
+      />
+      <circle cx="100" cy="100" r="96" fill="none" stroke="#000" strokeWidth="3" />
+      <circle cx="100" cy="100" r="52" fill="none" stroke="#000" strokeWidth="3" />
+      <circle cx="100" cy="100" r="104" fill="none" stroke="#D6AE55" strokeWidth="2.5" strokeDasharray="10 7" />
+    </svg>
+  );
+}

@@ -43,10 +43,11 @@ button, textarea { font: inherit; color: inherit; }
 .brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--muted); font-size: 15px; }
 .hero { position: relative; height: 165vh; min-height: 1250px; }
 .hero-stage { position: sticky; top: 0; height: 100vh; min-height: 620px; display: flex; flex-direction: column; overflow: hidden; }
-.hero-center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 34px; padding: 0 2vw; text-align: center; }
+.hero-center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px; padding: 0 2vw; text-align: center; }
+.buoy { width: min(34vh, 62vw); height: auto; flex: none; }
 .wordmark {
   margin: 0; font-family: var(--serif); font-weight: 800; white-space: nowrap;
-  font-size: clamp(56px, 15vw, 270px); line-height: 0.84; letter-spacing: -0.035em;
+  font-size: clamp(52px, 11.5vw, 190px); line-height: 0.88; letter-spacing: -0.035em;
 }
 .tagline { margin: 0; font-size: clamp(19px, 2vw, 24px); color: rgba(242, 239, 232, 0.78); }
 .hero-foot { padding: 0 40px 30px; text-align: center; font-size: 14px; color: var(--faint); }
@@ -56,16 +57,23 @@ button, textarea { font: inherit; color: inherit; }
 .risk { display: flex; flex-wrap: wrap; gap: 48px 72px; align-items: flex-end; }
 .risk .display { flex: 1 1 560px; }
 .risk p { flex: 1 1 320px; margin: 0; max-width: 440px; color: rgba(242, 239, 232, 0.7); }
-.chains { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); border-top: 1px solid var(--line); }
-.chains div { padding: 24px 24px 24px 0; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; }
-.chains b { font-family: var(--serif); font-weight: 800; font-size: 30px; letter-spacing: -0.01em; }
-.chains span { color: var(--muted); font-size: 15px; }
+.chains { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+.chains div { padding: 24px; border-radius: 22px; display: flex; flex-direction: column; gap: 8px; border: 2px solid var(--coral); }
+.chains div.safe { border-color: var(--sea); background: var(--sea); color: var(--black); }
+.chains b { font-family: var(--serif); font-weight: 800; font-size: 34px; letter-spacing: -0.015em; }
+.chains span { color: var(--muted); font-size: 16px; }
+.chains .safe span { color: rgba(0, 0, 0, 0.75); }
+.chains .exposed b { color: var(--coral); }
 
-.how { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
-.how li { display: grid; grid-template-columns: 80px minmax(0, 1fr) minmax(0, 1.3fr); gap: 12px 32px; align-items: baseline; padding: 30px 0; border-bottom: 1px solid var(--line); }
-.how .n { font-family: var(--serif); font-weight: 800; font-size: 44px; line-height: 1; color: var(--gold); }
-.how h3 { margin: 0; font-family: var(--serif); font-weight: 800; font-size: 34px; letter-spacing: -0.01em; }
-.how p { margin: 0; color: rgba(242, 239, 232, 0.7); }
+.how { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; }
+.how li { display: flex; flex-direction: column; gap: 14px; padding: 30px 28px 34px; border-radius: 28px; color: var(--black); min-height: 380px; }
+.how .step-1 { background: var(--gold); }
+.how .step-2 { background: var(--coral); }
+.how .step-3 { background: var(--sea); }
+.how .step-4 { background: var(--ivory); }
+.how .n { font-family: var(--serif); font-weight: 800; font-size: 96px; line-height: 0.85; letter-spacing: -0.04em; }
+.how h3 { margin: 0; font-family: var(--serif); font-weight: 800; font-size: 36px; letter-spacing: -0.02em; }
+.how p { margin: 0; color: rgba(0, 0, 0, 0.8); font-size: 17px; line-height: 1.5; }
 .promise { font-size: clamp(22px, 2.6vw, 34px); line-height: 1.35; max-width: 900px; margin: 0; }
 
 .closing { border-top: 1px solid var(--line); }
@@ -73,10 +81,12 @@ button, textarea { font: inherit; color: inherit; }
 .footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding-bottom: 40px; font-size: 14px; color: var(--faint); }
 .footer a { color: var(--faint); }
 
+@keyframes turn { to { transform: rotate(120deg) scale(0.8); } }
 @keyframes recede { to { transform: scale(0.7); letter-spacing: 0.16em; opacity: 0.16; } }
 @keyframes arrive { from { opacity: 0; transform: translateY(44px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: no-preference) {
   @supports (animation-timeline: scroll()) {
+    .buoy { animation: turn linear both; animation-timeline: scroll(root); animation-range: 0 90vh; }
     .wordmark { animation: recede linear both; animation-timeline: scroll(root); animation-range: 0 90vh; }
     .arrive { animation: arrive linear both; animation-timeline: view(); animation-range: entry 5% cover 35%; }
   }
