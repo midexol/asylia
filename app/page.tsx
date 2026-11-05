@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { ScanPreview } from "@/components/ScanPreview";
+import { HeroStage } from "@/components/HeroStage";
 import { Mark } from "@/components/Mark";
-import { NAME, REPO, SISTER, TAGLINE } from "@/lib/brand";
+import { NAME, REPO, SISTER } from "@/lib/brand";
 
 const STEPS = [
   ["Scan", `Paste your Bitcoin, Ethereum, BNB Chain or NEAR addresses. ${NAME} checks the blockchain and tells you which ones have a public key a quantum computer could use, and how much money is in them.`],
@@ -29,17 +29,26 @@ export default function Landing() {
       </header>
 
       <section className="wrap hero">
-        <div>
-          <h1>{TAGLINE}</h1>
-          <p className="sub">
-            Check which Bitcoin, Ethereum, BNB Chain and NEAR wallets are exposed. Sign a transfer to a safe address
-            today. A sealed watchman sends it the moment old wallets start being emptied.
-          </p>
+        <span className="hero-tag">
+          <b>New</b>Quantum-safe recovery for your crypto
+        </span>
+        <h1>
+          Move your crypto <em>before</em> quantum computers can open it.
+        </h1>
+        <p className="sub">
+          Find the wallets that are exposed, sign a transfer to a safe address today, and let a sealed watchman send it
+          the moment old wallets start being emptied. Your coins never leave your control.
+        </p>
+        <div className="hero-actions">
           <Link href="/scan" className="btn">
             Check my wallets
           </Link>
+          <a href="#how" className="btn btn-ghost">
+            How it works
+          </a>
         </div>
-        <ScanPreview />
+        <HeroStage />
+        <p className="stage-note">Examples of what each screen shows. Paste your own addresses to see yours.</p>
       </section>
 
       <section className="wrap block">
@@ -63,7 +72,7 @@ export default function Landing() {
         </div>
       </section>
 
-      <section className="wrap block">
+      <section className="wrap block" id="how">
         <h2 className="display">Four steps. No coins handed over.</h2>
         <ol className="how">
           {STEPS.map(([title, text], i) => (

@@ -9,7 +9,6 @@ const ROWS = [
 
 export function ScanPreview() {
   return (
-    <div>
       <div className="panel" role="img" aria-label="Example scan: two exposed wallets, one safe, one NEAR account upgraded">
         <div className="panel-head">
           <span>Example scan</span>
@@ -28,7 +27,5 @@ export function ScanPreview() {
           <b>2 escapes to seal</b>
         </div>
       </div>
-      <p className="panel-note">An example of what a scan shows. Paste your own addresses to see yours.</p>
-    </div>
   );
 }
