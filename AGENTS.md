@@ -22,9 +22,9 @@ Lifeboat is a Next.js 15 (App Router, TypeScript) app. Read [README.md](README.m
 - **Failed lookups:** a failed lookup must produce the verdict `unknown`, never `hidden` or `empty`.
 - **Copy on screen:** plain English, sentence case, one obvious action per screen. Avoid jargon such as "UTXO", "nonce" or "secp256k1" in the UI. It is fine in code and docs.
 - **Design:**
-  - colours: white `#FFFFFF` page, surface `#F5F6F8`, ink `#0B0D12` text, blue `#2F6BFF` accent, red `#E5484D` for danger, green `#12A150` for safe. No gold (deliberately different from Assayer). No boat, sea or rescue imagery: the name may change
-  - type: Geist 600 for headlines (one italic phrase in Instrument Serif), Geist for body, Geist Mono for data (deliberately different from Assayer)
-  - no gradients
+  - colours: light grey `#F4F5F6` page, surface `#ECEDEE`, white cards, ink `#17171A` text, dark pill buttons `#21201E`, blue `#2F6BFF` accent, red `#E5484D` for danger, green `#12A150` for safe. No gold (deliberately different from Assayer). No boat, sea or rescue imagery: the name may change
+  - type: Switzer (Fontshare) 500 for headlines with one italic phrase, Switzer for body, Geist Mono for data (deliberately different from Assayer)
+  - no gradients; the painted hero panels are SVG noise cut into flat bands (`components/Paint.tsx`)
 - **Safety:**
   - never commit keys, seeds or `.env` files
   - never sign or broadcast on mainnet

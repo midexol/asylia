@@ -5,18 +5,8 @@ import { ScanPreview } from "./ScanPreview";
 const MOVED = new Set<number>(); // a calm day: no old wallet has moved
 
 export function HeroStage() {
-  const cols = Array.from({ length: 13 }, (_, i) => i);
-  const rows = Array.from({ length: 9 }, (_, i) => i);
   return (
     <div className="stage">
-      <svg className="stage-grid" aria-hidden="true" preserveAspectRatio="none" viewBox="0 0 1200 600">
-        {cols.map((i) => (
-          <line key={`c${i}`} x1={i * 100} y1={0} x2={i * 100} y2={600} />
-        ))}
-        {rows.map((i) => (
-          <line key={`r${i}`} x1={0} y1={i * 75} x2={1200} y2={i * 75} />
-        ))}
-      </svg>
 
       <div className="card card-left" role="img" aria-label="Example sealed escape">
         <div className="card-title">
