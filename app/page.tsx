@@ -3,10 +3,10 @@ import { Mark } from "@/components/Mark";
 import { NAME, REPO, SISTER, TAGLINE } from "@/lib/brand";
 
 const STEPS = [
-  ["Scan", "Paste your wallet addresses. We tell you which ones a quantum computer could open, and how much is in them."],
-  ["Seal", "For each wallet at risk, you sign an escape to a fresh, safe address. It is locked away where nobody can read it, us included."],
-  ["Upgrade NEAR", "NEAR accounts don't need an escape. They add a quantum-safe key to the same account, and we show you exactly how."],
-  ["Watch", "A watchman keeps an eye on old wallets that would fall first. If they start moving, your escape goes out on its own."],
+  ["Scan", "Paste your Bitcoin, Ethereum, BNB Chain or NEAR addresses. Lifeboat checks the blockchain and tells you which ones have a public key a quantum computer could use, and how much money is in them."],
+  ["Seal", "For each wallet at risk, you sign one transfer in your own wallet that sends everything to a new address you control. Your browser encrypts it, and only a secure NEAR enclave can open it."],
+  ["Upgrade NEAR", "A NEAR account can keep its address and add a quantum-safe key (ML-DSA). Lifeboat checks the account live and gives you the exact commands to run on your own computer."],
+  ["Watch", "A watchman tracks 60 unspent Bitcoin wallets from 2009 whose public keys are exposed. Three moving in a day raises an alarm. Eight moving releases your transfer."],
 ];
 
 const CHAINS = [
@@ -71,8 +71,9 @@ export default function Landing() {
           ))}
         </ol>
         <p className="promise arrive">
-          {NAME} never holds your coins and never sees your private keys. The escape can only pay addresses you chose
-          yourself, so even the watchman that releases it cannot send your coins anywhere else.
+          {NAME} never holds your coins and never sees your private keys. Your signed transfer pays only the address you
+          chose. If it is released, it can do nothing else, so the worst a bad release can do is move your coins early to
+          your own safe address.
         </p>
       </section>
 

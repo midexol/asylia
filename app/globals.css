@@ -8,8 +8,8 @@
   --faint: rgba(242, 239, 232, 0.42);
   --line: rgba(242, 239, 232, 0.16);
   --raise: rgba(242, 239, 232, 0.06);
-  --serif: "Bodoni Moda", "Didot", "Bodoni 72", serif;
-  --sans: "Instrument Sans", system-ui, sans-serif;
+  --serif: "Bricolage Grotesque", system-ui, sans-serif;
+  --sans: "Hanken Grotesk", system-ui, sans-serif;
   color-scheme: dark;
 }
 
@@ -45,8 +45,8 @@ button, textarea { font: inherit; color: inherit; }
 .hero-stage { position: sticky; top: 0; height: 100vh; min-height: 620px; display: flex; flex-direction: column; overflow: hidden; }
 .hero-center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 34px; padding: 0 2vw; text-align: center; }
 .wordmark {
-  margin: 0; font-family: var(--serif); font-weight: 900; white-space: nowrap;
-  font-size: clamp(64px, 17.5vw, 310px); line-height: 0.84; letter-spacing: -0.035em;
+  margin: 0; font-family: var(--serif); font-weight: 800; white-space: nowrap;
+  font-size: clamp(56px, 15vw, 270px); line-height: 0.84; letter-spacing: -0.035em;
 }
 .tagline { margin: 0; font-size: clamp(19px, 2vw, 24px); color: rgba(242, 239, 232, 0.78); }
 .hero-foot { padding: 0 40px 30px; text-align: center; font-size: 14px; color: var(--faint); }
@@ -84,7 +84,7 @@ button, textarea { font: inherit; color: inherit; }
 
 /* ---------- App screens ---------- */
 .app-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 22px; padding-bottom: 22px; border-bottom: 1px solid var(--line); }
-.app-top .brand span { font-family: var(--serif); font-weight: 900; font-size: 24px; letter-spacing: -0.02em; color: var(--ivory); }
+.app-top .brand span { font-family: var(--serif); font-weight: 800; font-size: 24px; letter-spacing: -0.02em; color: var(--ivory); }
 
 .steps ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 .steps li > a, .steps li > .inner {

@@ -23,7 +23,7 @@ Lifeboat is a Next.js 15 (App Router, TypeScript) app. Read [README.md](README.m
 - **Copy on screen:** plain English, sentence case, one obvious action per screen. Avoid jargon such as "UTXO", "nonce" or "secp256k1" in the UI. It is fine in code and docs.
 - **Design:**
   - colours: pure black `#000`, ivory `#F2EFE8`, gold `#D6AE55`, coral `#E58363` for danger, sea `#8FB8A8` for safe
-  - type: Bodoni Moda 800/900 for headlines, Instrument Sans for everything else
+  - type: Bricolage Grotesque 700/800 for headlines, Hanken Grotesk for everything else (deliberately different from Assayer)
   - no gradients
 - **Safety:**
   - never commit keys, seeds or `.env` files
