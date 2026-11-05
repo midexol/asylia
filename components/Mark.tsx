@@ -3,7 +3,7 @@ export function Mark({ size = 26 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 120 120" aria-hidden="true">
       <path d="M60 22 V70" stroke="#F2EFE8" strokeWidth="9" strokeLinecap="square" />
-      <path d="M22 70 H98 Q90 96 60 96 Q30 96 22 70 Z" fill="#D6AE55" />
+      <path d="M22 70 H98 Q90 96 60 96 Q30 96 22 70 Z" fill="#E58363" />
     </svg>
   );
 }
@@ -21,7 +21,7 @@ export function Buoy({ className }: { className?: string }) {
       />
       <circle cx="100" cy="100" r="96" fill="none" stroke="#000" strokeWidth="3" />
       <circle cx="100" cy="100" r="52" fill="none" stroke="#000" strokeWidth="3" />
-      <circle cx="100" cy="100" r="104" fill="none" stroke="#D6AE55" strokeWidth="2.5" strokeDasharray="10 7" />
+      <circle cx="100" cy="100" r="106" fill="none" stroke="#F2EFE8" strokeOpacity="0.28" strokeWidth="1" />
     </svg>
   );
 }
