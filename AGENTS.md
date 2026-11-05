@@ -22,8 +22,8 @@ Lifeboat is a Next.js 15 (App Router, TypeScript) app. Read [README.md](README.m
 - **Failed lookups:** a failed lookup must produce the verdict `unknown`, never `hidden` or `empty`.
 - **Copy on screen:** plain English, sentence case, one obvious action per screen. Avoid jargon such as "UTXO", "nonce" or "secp256k1" in the UI. It is fine in code and docs.
 - **Design:**
-  - colours: indigo ink `#14112B` background, surface `#1C1840`, text `#F1EFFA`, violet accent `#A99BFF`, signal `#FF6F59` for danger, mint `#5FD9AE` for safe. No black, no gold (deliberately different from Assayer). No boat, sea or rescue imagery: the name may change
-  - type: Bricolage Grotesque 700/800 for headlines, Hanken Grotesk for everything else (deliberately different from Assayer)
+  - colours: graphite `#16181D` background, surface `#1F2229`, white text, electric blue `#4C8DFF` accent, red `#FF5A4F` for danger, green `#3DD68C` for safe. No black, no gold (deliberately different from Assayer). No boat, sea or rescue imagery: the name may change
+  - type: Geist 600 for headlines, Geist for body, Geist Mono for data (deliberately different from Assayer)
   - no gradients
 - **Safety:**
   - never commit keys, seeds or `.env` files

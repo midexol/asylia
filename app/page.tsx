@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Lattice } from "@/components/Lattice";
+import { ScanPreview } from "@/components/ScanPreview";
 import { Mark } from "@/components/Mark";
 import { NAME, REPO, SISTER, TAGLINE } from "@/lib/brand";
 
@@ -39,14 +39,7 @@ export default function Landing() {
             Check my wallets
           </Link>
         </div>
-        <div>
-          <Lattice />
-          <div className="legend" aria-hidden="true">
-            <span><i style={{ background: "var(--danger)" }} />Exposed key</span>
-            <span><i style={{ border: "2px solid var(--accent)" }} />Quantum-safe key</span>
-            <span><i style={{ background: "var(--safe)" }} />Sealed transfer</span>
-          </div>
-        </div>
+        <ScanPreview />
       </section>
 
       <section className="wrap block">
