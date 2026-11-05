@@ -61,7 +61,7 @@ if (!accountId.endsWith(".testnet") && !/^[0-9a-f]{64}$/.test(accountId)) {
 const classic = signerFromPrivateKey(classicKey);
 const pq = signerFromSeed(sha256(`lifeboat:near-testnet:ml-dsa-65:${seed}`));
 
-say(`## Lifeboat NEAR upgrade on testnet\n`);
+say(`## Asylia NEAR upgrade on testnet\n`);
 say(`- Account: \`${accountId}\` ([explorer](https://testnet.nearblocks.io/address/${accountId}))`);
 
 try {

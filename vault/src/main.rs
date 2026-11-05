@@ -1,4 +1,4 @@
-//! Lifeboat's vault, run inside an OutLayer TEE.
+//! Asylia's vault, run inside an OutLayer TEE.
 //!
 //! Input on stdin (JSON), output on stdout (JSON, at most 900 bytes):
 //!   {"op":"seal","escape":{"id","chain","network","txs":[hex...]}}  store an escape, encrypted

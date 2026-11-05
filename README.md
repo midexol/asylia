@@ -1,8 +1,10 @@
-# Lifeboat
+# Asylia
 
-Lifeboat gets your crypto out before a quantum computer can steal it, without ever holding your coins.
+*Asylia* is Greek for inviolability: protection from seizure. The project was built under the working name Lifeboat, so the repository, the live site address, the testnet account (`lifeboat-f86cd6e7d4.testnet`) and the vault's encryption labels still say `lifeboat`.
 
-A large enough quantum computer can work out a wallet's private key from its public key, and millions of wallets have already published theirs. Lifeboat does four things:
+Asylia gets your crypto out before a quantum computer can steal it, without ever holding your coins.
+
+A large enough quantum computer can work out a wallet's private key from its public key, and millions of wallets have already published theirs. Asylia does four things:
 
 1. **Scan:** finds which of your Bitcoin, Ethereum, BNB Chain and NEAR wallets are exposed, and how much is in them.
 2. **Seal:** helps you sign an *escape* in your own wallet: a transaction that moves everything to a fresh address whose key has never been seen. The escape is encrypted in your browser and sealed inside a vault running in an OutLayer enclave on NEAR.
@@ -49,7 +51,7 @@ None of this needs keys or environment variables, except sealing into the vault 
 ## How NEAR is used
 
 - **Quantum-safe keys (protocol 2.13, ML-DSA-65).**
-  - NEAR is the one chain here that can be fixed in place. Lifeboat adds an ML-DSA-65 key to an existing account, signed by the classic key, then signs with the new key: [`scripts/near-upgrade.mjs`](scripts/near-upgrade.mjs), using FastNEAR's `@fastnear/ml-dsa-65`.
+  - NEAR is the one chain here that can be fixed in place. Asylia adds an ML-DSA-65 key to an existing account, signed by the classic key, then signs with the new key: [`scripts/near-upgrade.mjs`](scripts/near-upgrade.mjs), using FastNEAR's `@fastnear/ml-dsa-65`.
   - The Upgrade screen checks any account's keys live and gives the NEAR CLI commands (`near-cli-rs` 0.29+). The key is generated on the owner's computer, never on a website.
 - **OutLayer enclave (TEE) on NEAR.** The vault ([`vault/`](vault), Rust, `wasm32-wasip2`):
   - makes its own encryption key inside the enclave;
@@ -59,7 +61,7 @@ None of this needs keys or environment variables, except sealing into the vault 
 
   It is called through `request_execution` on `outlayer.testnet`.
 - **NEAR AI Cloud.** When three or more canaries move in a day, the watchman asks a model on NEAR AI Cloud whether the moves look like an attack ([`lib/watchman/judge.ts`](lib/watchman/judge.ts)). The model sees counts and fees, never addresses. It can confirm an alarm, but it can't start one or block a release.
-- **Why not Chain Signatures?** NEAR's MPC network signs with classical keys and has no post-quantum timeline yet. Lifeboat therefore never takes custody of coins.
+- **Why not Chain Signatures?** NEAR's MPC network signs with classical keys and has no post-quantum timeline yet. Asylia therefore never takes custody of coins.
 
 ## Why each track
 
@@ -70,12 +72,12 @@ None of this needs keys or environment variables, except sealing into the vault 
   - it is signed by the exposed wallet.
 
   Tampered escapes are refused in the browser flow and in the enclave.
-- **`privacy`:** escapes are encrypted on the owner's device to a key that exists only inside the enclave. Neither the Lifeboat server nor anyone reading NEAR can see them. The AI judgement receives no addresses.
+- **`privacy`:** escapes are encrypted on the owner's device to a key that exists only inside the enclave. Neither the Asylia server nor anyone reading NEAR can see them. The AI judgement receives no addresses.
 - **`open`:** quantum readiness across Bitcoin, Ethereum, BNB Chain and NEAR in one flow, built to be usable by someone who has never heard of a public key.
 
 ## The problem
 
-| Chain | When the public key becomes visible | What Lifeboat does |
+| Chain | When the public key becomes visible | What Asylia does |
 | --- | --- | --- |
 | Bitcoin | After the first spend. Taproot always | Escape to a fresh address |
 | Ethereum, BNB Chain | After the first outgoing transaction | Escape, including USDC and USDT |
@@ -115,7 +117,7 @@ Code: [`lib/btc/rescue.ts`](lib/btc/rescue.ts), [`components/Sealer.tsx`](compon
 1. Paste an exposed `0x` address, choose the network, and choose **Testnet**.
 2. You get one `cast mktx` command per step. On mainnet, any USDC or USDT goes first. The rest of the native coin goes last, after every fee is reserved.
 3. Run each command on your own computer. `cast` signs without sending, which browser wallets such as MetaMask can't do. Paste the results back.
-4. Lifeboat checks the signer, chain, nonces, recipients (including inside token transfers) and fee caps.
+4. Asylia checks the signer, chain, nonces, recipients (including inside token transfers) and fee caps.
 
 Code: [`lib/evm/rescue.ts`](lib/evm/rescue.ts), [`components/EvmEscape.tsx`](components/EvmEscape.tsx).
 

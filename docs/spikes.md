@@ -1,6 +1,6 @@
 # Spikes, 4 November 2026
 
-Lifeboat depends on three things working that nobody has stitched together before. This file records what was checked, what was learned, and what is still open. Nothing here touched mainnet or spent tokens.
+Asylia depends on three things working that nobody has stitched together before. This file records what was checked, what was learned, and what is still open. Nothing here touched mainnet or spent tokens.
 
 ## 1. ML-DSA-65 keys on NEAR (FastNEAR)
 
@@ -19,7 +19,7 @@ Lifeboat depends on three things working that nobody has stitched together befor
 **From the FastNEAR docs** ([js.fastnear.com/post-quantum](https://js.fastnear.com/post-quantum)):
 
 - The AddKey is signed by the account's existing classic key, with `actions.addFullAccessKey({ publicKey })` and the full `ml-dsa-65:` key, not the hash handle.
-- Each ML-DSA signature costs 100 Ggas to verify, so Lifeboat uses the new key only for plan changes.
+- Each ML-DSA signature costs 100 Ggas to verify, so Asylia uses the new key only for plan changes.
 - To compare a key with what `view_access_key_list` returns, convert it with `publicKeyToHandle()`.
 - Mainnet went live with network upgrade 2.13 on 20 July 2026 ([NEAR announcement, via Webull](https://www.webull.com/news/15259913496765440)).
 
@@ -42,7 +42,7 @@ Lifeboat depends on three things working that nobody has stitched together befor
 - A NEAR contract triggers a run with `request_execution` on `outlayer.testnet` / `outlayer.near` and gets the WASM's stdout back in a callback. Runs last up to 180 s.
 - Storing a secret costs about 0.1 NEAR, which is refunded on delete.
 
-**What this means for Lifeboat:** OutLayer has no "release when X happens" switch of its own, and we don't need one. The design becomes:
+**What this means for Asylia:** OutLayer has no "release when X happens" switch of its own, and we don't need one. The design becomes:
 
 1. The owner seals each signed rescue as a secret whose condition is *Whitelist[registry contract] AND Direct calls only AND one build only*.
 2. Only the registry contract can call `request_execution` with that secret. It does so only when the watchman, on its narrow release key, reports an attack.
@@ -55,7 +55,7 @@ The rescue is signed before it is sealed, so whoever releases it cannot change w
 - The secret reaches the WASM in plain form. The WASM must be tiny and pinned by hash, so it cannot be swapped for one that leaks.
 - The docs don't mention testnet support for secrets. This needs checking on testnet before 10 November.
 
-**Verdict, updated the same day: proven, with a better design than the one above.** OutLayer runs Lifeboat's own Rust program (`wasm32-wasip2`) inside the enclave. That program has encrypted storage, outbound HTTP and enclave randomness, so:
+**Verdict, updated the same day: proven, with a better design than the one above.** OutLayer runs Asylia's own Rust program (`wasm32-wasip2`) inside the enclave. That program has encrypted storage, outbound HTTP and enclave randomness, so:
 
 - **Keys:** the vault makes its own X25519 key inside the enclave, and owners encrypt escapes to it in the browser. No OutLayer secrets UI is involved.
 - **Release:** the release rule runs inside the enclave. The vault checks the canaries itself and broadcasts escapes itself, so no registry contract has to be the gatekeeper.
@@ -80,4 +80,4 @@ Deployed as `lifeboat-f86cd6e7d4.testnet/lifeboat-vault` and self-tested on test
 
 ## Also confirmed
 
-- The roadmap says NEAR's MPC network (Chain Signatures) has no post-quantum timeline yet. That is why Lifeboat never moves coins through it.
+- The roadmap says NEAR's MPC network (Chain Signatures) has no post-quantum timeline yet. That is why Asylia never moves coins through it.

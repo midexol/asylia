@@ -1,5 +1,5 @@
 // Server-side: run the vault once on OutLayer testnet through request_execution, paying from
-// the Lifeboat testnet account (derived from NEAR_TESTNET_SEED, as scripts/testnet-account.mjs does).
+// the Asylia testnet account (derived from NEAR_TESTNET_SEED, as scripts/testnet-account.mjs does).
 // Only ever sees sealed (encrypted) escapes.
 import { createHash } from "node:crypto";
 import * as near from "@fastnear/api";

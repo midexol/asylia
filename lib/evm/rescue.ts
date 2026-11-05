@@ -1,7 +1,7 @@
 // Build and check an Ethereum or BNB Chain escape: a set of transactions, signed now and
 // sent later, that move every USDC, USDT and native coin from an exposed address to a fresh
 // one. Token transfers go first and the native sweep last, with nonces in sequence, so the
-// native coin still pays every fee. Lifeboat never holds a key: the owner signs offline.
+// native coin still pays every fee. Asylia never holds a key: the owner signs offline.
 import {
   decodeFunctionData,
   encodeFunctionData,

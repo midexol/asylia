@@ -1,7 +1,7 @@
 // Build and check a Bitcoin rescue: one transaction that sweeps every coin in an exposed
-// address to a fresh address whose public key has never been seen. Lifeboat builds it
-// unsigned (a PSBT), the owner signs it in their own wallet, and Lifeboat checks the
-// signed result pays only where the owner chose before it is sealed. No keys touch Lifeboat.
+// address to a fresh address whose public key has never been seen. Asylia builds it
+// unsigned (a PSBT), the owner signs it in their own wallet, and Asylia checks the
+// signed result pays only where the owner chose before it is sealed. No keys touch Asylia.
 import * as ecc from "@bitcoinerlab/secp256k1";
 import { address as baddress, initEccLib, networks, Psbt, Transaction, type Network as BtcNetwork } from "bitcoinjs-lib";
 import { parseAddress, type BitcoinKind, type Network } from "../address";
@@ -162,7 +162,7 @@ export function checkRescue(signed: string, plan: RescuePlan): CheckResult {
   const planned = new Set(plan.utxos.map((u) => `${u.txid}:${u.vout}`));
   const spent = tx.ins.map((i) => `${Buffer.from(i.hash).reverse().toString("hex")}:${i.index}`);
   if (spent.length !== planned.size || spent.some((s) => !planned.has(s))) {
-    problems.push("It spends different coins from the rescue Lifeboat prepared.");
+    problems.push("It spends different coins from the rescue Asylia prepared.");
   }
   if (tx.ins.some((i) => !i.script.length && !i.witness.length)) {
     problems.push("Some inputs are not signed.");

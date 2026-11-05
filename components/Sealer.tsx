@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { Mark } from "./Mark";
 import { Steps } from "./Steps";
-import { NAME } from "@/lib/brand";
+import { NAME, SLUG } from "@/lib/brand";
 import type { CheckResult, FeeSpeed, RescuePlan } from "@/lib/btc/rescue";
 import type { EvmChain, EvmNetwork, EvmPlan } from "@/lib/evm/rescue";
 import { EvmEscape } from "./EvmEscape";
@@ -215,7 +215,7 @@ export function Sealer() {
                 <button
                   type="button"
                   className="btn btn-quiet"
-                  onClick={() => download("lifeboat-escape.psbt", Uint8Array.from(atob(plan.psbt), (c) => c.charCodeAt(0)))}
+                  onClick={() => download(`${SLUG}-escape.psbt`, Uint8Array.from(atob(plan.psbt), (c) => c.charCodeAt(0)))}
                 >
                   Download file
                 </button>
@@ -277,8 +277,8 @@ export function Sealer() {
                 className="btn btn-quiet"
                 onClick={() =>
                   download(
-                    `lifeboat-escape-${check.txid?.slice(0, 8)}.json`,
-                    JSON.stringify({ kind: "lifeboat-bitcoin-escape", network: plan.network, from: plan.from, to: plan.to, amount_sats: check.amount, fee_sats: check.fee, txid: check.txid, tx_hex: check.txHex, utxos: plan.utxos }, null, 2),
+                    `${SLUG}-escape-${check.txid?.slice(0, 8)}.json`,
+                    JSON.stringify({ kind: `${SLUG}-bitcoin-escape`, network: plan.network, from: plan.from, to: plan.to, amount_sats: check.amount, fee_sats: check.fee, txid: check.txid, tx_hex: check.txHex, utxos: plan.utxos }, null, 2),
                     "application/json",
                   )
                 }

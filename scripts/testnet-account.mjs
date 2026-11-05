@@ -1,4 +1,4 @@
-// The Lifeboat testnet account, derived from the NEAR_TESTNET_SEED secret exactly as
+// The Asylia testnet account, derived from the NEAR_TESTNET_SEED secret exactly as
 // scripts/near-upgrade.mjs derives it, so every workflow uses the same account and key.
 import { createHash } from "node:crypto";
 import { ed25519 } from "@noble/curves/ed25519";

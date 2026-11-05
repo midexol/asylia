@@ -2,7 +2,7 @@
 
 ## What this is
 
-Lifeboat is a Next.js 15 (App Router, TypeScript) app. Read [README.md](README.md) for the product, and [docs/spikes.md](docs/spikes.md) for what is proven and what is open.
+Asylia is a Next.js 15 (App Router, TypeScript) app. Read [README.md](README.md) for the product, and [docs/spikes.md](docs/spikes.md) for what is proven and what is open.
 
 ## Commands
 

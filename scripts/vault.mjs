@@ -1,4 +1,4 @@
-// Deploy and call Lifeboat's vault on OutLayer testnet, as the Lifeboat testnet account.
+// Deploy and call Asylia's vault on OutLayer testnet, as the Asylia testnet account.
 //   node scripts/vault.mjs deploy <wasm url> <sha256>   register the project, or add a new active version
 //   node scripts/vault.mjs call '<json input>'           run the vault once through request_execution
 // Testnet only. Uses the account derived from NEAR_TESTNET_SEED (see testnet-account.mjs).

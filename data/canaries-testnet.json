@@ -1,5 +1,5 @@
 {
- "about": "Testnet4 canaries for the simulated-attack demo. Coins Lifeboat's demo controls, so it can move them on purpose.",
+ "about": "Testnet4 canaries for the simulated-attack demo. Coins Asylia's demo controls, so it can move them on purpose.",
  "network": "testnet",
  "canaries": []
 }

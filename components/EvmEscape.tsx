@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { NAME } from "@/lib/brand";
+import { NAME, SLUG } from "@/lib/brand";
 import { VaultSeal } from "./VaultSeal";
 import { CHAINS, castCommand, type EvmCheck, type EvmPlan, type PlannedTx } from "@/lib/evm/rescue";
 
@@ -95,8 +95,8 @@ export function EvmEscape({
             className="btn btn-quiet"
             onClick={() =>
               download(
-                `lifeboat-escape-${plan.chain}-${check.hashes[0]?.slice(2, 10)}.json`,
-                JSON.stringify({ kind: "lifeboat-evm-escape", chain: plan.chain, network: plan.network, chain_id: plan.chainId, from: plan.from, to: plan.to, signed_txs: check.signed, hashes: check.hashes }, null, 2),
+                `${SLUG}-escape-${plan.chain}-${check.hashes[0]?.slice(2, 10)}.json`,
+                JSON.stringify({ kind: `${SLUG}-evm-escape`, chain: plan.chain, network: plan.network, chain_id: plan.chainId, from: plan.from, to: plan.to, signed_txs: check.signed, hashes: check.hashes }, null, 2),
                 "application/json",
               )
             }
