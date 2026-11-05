@@ -19,8 +19,8 @@ export function Buoy({ className }: { className?: string }) {
         cx="100" cy="100" r={r} fill="none" stroke="#E58363" strokeWidth="44"
         strokeDasharray={`${c / 8} ${c / 8}`} transform="rotate(-22.5 100 100)"
       />
-      <circle cx="100" cy="100" r="96" fill="none" stroke="#000" strokeWidth="3" />
-      <circle cx="100" cy="100" r="52" fill="none" stroke="#000" strokeWidth="3" />
+      <circle cx="100" cy="100" r="96" fill="none" stroke="#0C2340" strokeWidth="3" />
+      <circle cx="100" cy="100" r="52" fill="none" stroke="#0C2340" strokeWidth="3" />
       <circle cx="100" cy="100" r="106" fill="none" stroke="#F2EFE8" strokeOpacity="0.28" strokeWidth="1" />
     </svg>
   );
