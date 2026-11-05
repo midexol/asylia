@@ -1,7 +1,10 @@
 import Link from "next/link";
+import { HeroCheck } from "@/components/HeroCheck";
 import { HeroStage } from "@/components/HeroStage";
+import { LiveWatch } from "@/components/LiveWatch";
 import { Mark } from "@/components/Mark";
 import { Paint } from "@/components/Paint";
+import { Scramble } from "@/components/Scramble";
 import { NAME, REPO, SISTER } from "@/lib/brand";
 
 const STEPS = [
@@ -58,16 +61,15 @@ export default function Landing() {
           <Paint />
           <div className="hero-inner">
             <h1>
-              Move your crypto <em>before</em> a quantum computer can open it
+              Move your crypto before a quantum computer can <Scramble text="open it." />
             </h1>
             <p className="sub">
               Find the wallets with exposed keys, sign a transfer to a safe address today, and let a sealed watchman send
               it the moment old wallets start being emptied. Your coins never leave your control.
             </p>
-            <Link href="/scan" className="btn">
-              Check my wallets <Arrow />
-            </Link>
+            <HeroCheck />
           </div>
+          <LiveWatch />
         </section>
       </div>
 

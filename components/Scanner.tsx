@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { HANDOFF_KEY } from "./HeroCheck";
 import { Mark } from "./Mark";
 import { Steps } from "./Steps";
 import { NAME } from "@/lib/brand";
@@ -36,8 +37,24 @@ export function Scanner() {
   const [results, setResults] = useState<Result[] | null>(null);
   const resultsRef = useRef<HTMLHeadingElement>(null);
 
-  async function check() {
-    if (!text.trim()) {
+  // An address typed on the landing page arrives through sessionStorage and is checked straight away.
+  useEffect(() => {
+    let handed = "";
+    try {
+      handed = sessionStorage.getItem(HANDOFF_KEY) ?? "";
+      sessionStorage.removeItem(HANDOFF_KEY);
+    } catch {
+      return;
+    }
+    if (handed) {
+      setText(handed);
+      void check(handed);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function check(input: string = text) {
+    if (!input.trim()) {
       setError("Paste at least one wallet address first.");
       return;
     }
@@ -47,7 +64,7 @@ export function Scanner() {
       const res = await fetch("/api/scan", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text: input }),
       });
       const body = (await res.json()) as { results?: Result[]; error?: string };
       if (!res.ok || !body.results) throw new Error(body.error ?? "The check didn't finish. Try again.");
@@ -104,7 +121,7 @@ export function Scanner() {
             </p>
           )}
           <div className="actions">
-            <button type="button" className="btn" onClick={check} disabled={busy}>
+            <button type="button" className="btn" onClick={() => check()} disabled={busy}>
               {busy ? "Checking..." : "Check them"}
             </button>
             <span className="privacy">Takes a few seconds.</span>
