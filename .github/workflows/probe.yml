@@ -37,7 +37,7 @@ jobs:
         run: |
           css=$(curl -s 'https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,400i,500i&display=swap')
           echo "$css"
-          for u in $(echo "$css" | grep -o 'url([^)]*woff2[^)]*)' | sed 's/url(//;s/)//;s/"//g'); do
+          for u in $(echo "$css" | grep -o 'url([^)]*woff2[^)]*)' | sed "s/url(//;s/)//;s/[\"']//g"); do
             case "$u" in //*) u="https:$u";; esac
             echo "FONT $u"; curl -s "$u" | base64 -w0; echo
           done
