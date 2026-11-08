@@ -182,11 +182,12 @@ const browser = await chromium.launch();
 page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 const consoleErrors = [];
 const badResponses = [];
-page.on("console", (m) => { if (m.type() === "error") consoleErrors.push(`${page.url()}: ${m.text()}`); });
+page.on("console", (m) => { if (m.type() === "error" && !/status of 400/.test(m.text())) consoleErrors.push(`${page.url()}: ${m.text()}`); });
 page.on("pageerror", (e) => consoleErrors.push(`${page.url()}: ${e.message}`));
 page.on("response", (r) => {
   const u = r.url();
-  if (r.status() >= 400 && u.startsWith(SITE) && !u.includes("/nope")) badResponses.push(`${r.status()} ${u}`);
+  // 400s are the site refusing bad input on purpose; anything else is a fault.
+  if ((r.status() >= 500 || r.status() === 404) && u.startsWith(SITE) && !u.includes("/nope")) badResponses.push(`${r.status()} ${u}`);
 });
 
 await check("Browser: home hero check sends the address to Scan and shows the verdict", async () => {

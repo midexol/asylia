@@ -136,7 +136,7 @@ export async function bitcoinUtxos(p: Extract<Parsed, { chain: "bitcoin" }>, f: 
   try {
     utxos = (await getJson(f, `${base}/address/${p.address}/utxo`)) as BtcUtxo[];
   } catch (e) {
-    if (e instanceof Error && /too many/i.test(e.message)) throw new TooManyCoinsError();
+    if (e instanceof Error && /too many|history entries/i.test(e.message)) throw new TooManyCoinsError();
     throw e;
   }
   const legacy = p.kind === "p2pkh" || p.kind === "p2sh";
