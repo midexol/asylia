@@ -32,6 +32,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ plan, fastestToday: fastest, speed });
   } catch (e) {
     if (e instanceof RescueError || e instanceof TooManyCoinsError) return NextResponse.json({ error: e.message }, { status: 400 });
-    return NextResponse.json({ error: "We couldn't reach the Bitcoin network just now. Try again in a minute." }, { status: 502 });
+    const detail = e instanceof Error ? e.message.slice(0, 200) : undefined;
+    return NextResponse.json({ error: "We couldn't reach the Bitcoin network just now. Try again in a minute.", detail }, { status: 502 });
   }
 }
