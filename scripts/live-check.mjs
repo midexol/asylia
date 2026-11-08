@@ -219,11 +219,15 @@ await check("Browser: Seal an escape opens Seal with the address filled in", asy
   expect(from === EXPOSED_BTC, `from field is "${from}"`);
 });
 await check("Browser: Seal prepares a Bitcoin escape to a fresh address", async () => {
+  expect(recentSpender, "could not find a recent spender to try");
+  await page.goto(`${SITE}/seal?address=${recentSpender}&chain=bitcoin`, { waitUntil: "networkidle" });
   await page.locator("#to").fill(freshBtc());
   await page.getByRole("button", { name: /Prepare my escape/ }).click();
-  await page.locator("#psbt, .error, [role=alert]").first().waitFor({ timeout: 45000 });
-  if (await page.locator("#psbt").count()) return "unsigned transaction shown for signing";
-  return "refused with: " + (await page.locator(".error, [role=alert]").first().textContent());
+  await page.locator("#psbt, p.error").first().waitFor({ timeout: 45000 });
+  if (await page.locator("#psbt").count()) return "unsigned transaction shown, ready to sign in a wallet";
+  const why = await page.locator("p.error").first().textContent();
+  expect(/nothing|empty|no coins|too small|dust/i.test(why ?? ""), `error: ${why}`);
+  return `refused with a clear reason: ${why}`;
 });
 await check("Browser: Upgrade reads the testnet account", async () => {
   await page.goto(SITE + "/upgrade", { waitUntil: "networkidle" });
