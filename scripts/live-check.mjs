@@ -71,7 +71,7 @@ await check("POST /api/scan: exposed, unspent, ETH+BNB and NEAR in one go", asyn
   const r = await post("/api/scan", { text: [EXPOSED_BTC, UNSPENT_BTC, EXPOSED_EVM, NEAR_UPGRADED].join("\n") });
   expect(r.status === 200, `HTTP ${r.status} ${JSON.stringify(r.body).slice(0, 200)}`);
   const by = (i, chain) => r.body.results.find((x) => x.input.toLowerCase() === i.toLowerCase() && (!chain || x.chain === chain));
-  expect(by(EXPOSED_BTC)?.verdict === "exposed", "exposed BTC not marked exposed");
+  expect(by(EXPOSED_BTC)?.verdict === "exposed", `exposed BTC came back as ${JSON.stringify(by(EXPOSED_BTC))}`);
   expect(by(UNSPENT_BTC)?.verdict === "hidden", "never-spent BTC not marked safe for now");
   expect(by(EXPOSED_EVM, "ethereum")?.verdict === "exposed", "ETH wallet not marked exposed");
   expect(by(EXPOSED_EVM, "bsc")?.verdict === "exposed", "BNB wallet not marked exposed");
@@ -94,15 +94,20 @@ await check("GET /api/near/keys: upgraded testnet account", async () => {
   return `${r.body.keys.length} keys`;
 });
 await check("GET /api/near/keys: mainnet account without the new key gets the upgrade commands", async () => {
-  const r = await api(`/api/near/keys?account=near`);
+  const r = await api(`/api/near/keys?account=wrap.near`);
   expect(r.status === 200, `HTTP ${r.status} ${JSON.stringify(r.body).slice(0, 160)}`);
   expect(r.body.state !== "upgraded", "state says upgraded");
   return `state ${r.body.state}`;
 });
-await check("GET /api/near/keys: unknown account is handled", async () => {
+await check("GET /api/near/keys: unknown account says it does not exist", async () => {
   const r = await api(`/api/near/keys?account=no-such-account-${Date.now()}.testnet`);
-  expect(r.status < 500, `HTTP ${r.status}`);
-  return `HTTP ${r.status}`;
+  expect(r.status === 404, `HTTP ${r.status}`);
+  return r.body.error;
+});
+await check("GET /api/near/keys: account with over 100 keys gets a clear answer", async () => {
+  const r = await api(`/api/near/keys?account=near`);
+  expect(r.status === 422, `HTTP ${r.status} ${JSON.stringify(r.body).slice(0, 160)}`);
+  return r.body.error;
 });
 await check("GET /api/watch/status: live mainnet canaries", async () => {
   const r = await api("/api/watch/status?network=mainnet");
@@ -119,15 +124,31 @@ await check("GET /api/watch/status: simulated attack would release and is marked
   expect(r.body.decision.release === false, "a simulation would really release");
   return r.body.decision.why;
 });
-await check("POST /api/rescue/btc/prepare: unsigned plan to a fresh address", async () => {
+await check("POST /api/rescue/btc/prepare: address with over 500 coins gets a clear answer", async () => {
   const r = await post("/api/rescue/btc/prepare", { from: EXPOSED_BTC, to: freshBtc(), speed: "high" });
+  expect(r.status === 400 && /500/.test(r.body.error ?? ""), `HTTP ${r.status} ${JSON.stringify(r.body).slice(0, 200)}`);
+  return r.body.error;
+});
+// An ordinary wallet that just spent: its key is public, and it may still hold change.
+const recentSpender = await (async () => {
+  const ids = await (await fetch("https://mempool.space/api/mempool/recent")).json();
+  for (const { txid } of ids) {
+    const tx = await (await fetch(`https://mempool.space/api/tx/${txid}`)).json();
+    const a = tx.vin?.[0]?.prevout;
+    if (a?.scriptpubkey_type === "v0_p2wpkh" && a.scriptpubkey_address) return a.scriptpubkey_address;
+  }
+  return null;
+})().catch(() => null);
+await check("POST /api/rescue/btc/prepare: unsigned plan to a fresh address", async () => {
+  expect(recentSpender, "could not find a recent spender to try");
+  const r = await post("/api/rescue/btc/prepare", { from: recentSpender, to: freshBtc(), speed: "high" });
   expect(r.status === 200 || (r.status === 400 && r.body.error), `HTTP ${r.status} ${JSON.stringify(r.body).slice(0, 200)}`);
   if (r.status === 400) return `refused with a clear reason: ${r.body.error}`;
   expect(typeof r.body.plan?.psbt === "string" && r.body.plan.psbt.length > 50, "no PSBT in the plan");
   return `PSBT ${r.body.plan.psbt.length} chars, ${r.ms} ms`;
 });
 await check("POST /api/rescue/btc/prepare: used safe address is refused", async () => {
-  const r = await post("/api/rescue/btc/prepare", { from: EXPOSED_BTC, to: EXPOSED_BTC });
+  const r = await post("/api/rescue/btc/prepare", { from: recentSpender ?? EXPOSED_BTC, to: UNSPENT_BTC });
   expect(r.status === 400, `HTTP ${r.status}`);
   return r.body.error;
 });

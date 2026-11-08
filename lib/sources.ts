@@ -16,9 +16,32 @@ export const ENDPOINTS = {
 
 const TIMEOUT_MS = 8000;
 
+// mempool.space rate-limits busy shared hosts. Blockstream runs the same Esplora API, so a
+// mainnet read that is refused or times out is retried there once.
+export const BITCOIN_FALLBACK = "https://blockstream.info/api";
+
+async function get(f: Fetch, url: string, init?: RequestInit): Promise<Response> {
+  const once = (u: string) => f(u, { ...init, signal: AbortSignal.timeout(TIMEOUT_MS) });
+  const fallback = url.startsWith(ENDPOINTS.bitcoin.mainnet + "/") && !url.includes("/v1/")
+    ? url.replace(ENDPOINTS.bitcoin.mainnet, BITCOIN_FALLBACK)
+    : null;
+  let res: Response;
+  try {
+    res = await once(url);
+  } catch (e) {
+    if (fallback) return once(fallback);
+    throw e;
+  }
+  if (fallback && (res.status === 429 || res.status >= 500)) return once(fallback);
+  return res;
+}
+
 async function getJson(f: Fetch, url: string, init?: RequestInit): Promise<unknown> {
-  const res = await f(url, { ...init, signal: AbortSignal.timeout(TIMEOUT_MS) });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const res = await get(f, url, init);
+  if (!res.ok) {
+    const detail = (await res.text().catch(() => "")).trim().slice(0, 160);
+    throw new Error(detail ? `HTTP ${res.status}: ${detail}` : `HTTP ${res.status}`);
+  }
   return res.json();
 }
 
@@ -99,10 +122,23 @@ export interface BtcUtxo {
   status?: { confirmed: boolean };
 }
 
+/** The address holds more separate coins than the public API will list (over 500). */
+export class TooManyCoinsError extends Error {
+  constructor() {
+    super("This address holds more than 500 separate coins, which is more than one escape transaction can carry here. Rescue it from your own wallet software in several transfers.");
+  }
+}
+
 /** Every unspent coin at an address, with the previous transaction for legacy addresses. */
 export async function bitcoinUtxos(p: Extract<Parsed, { chain: "bitcoin" }>, f: Fetch = fetch) {
   const base = ENDPOINTS.bitcoin[p.network];
-  const utxos = (await getJson(f, `${base}/address/${p.address}/utxo`)) as BtcUtxo[];
+  let utxos: BtcUtxo[];
+  try {
+    utxos = (await getJson(f, `${base}/address/${p.address}/utxo`)) as BtcUtxo[];
+  } catch (e) {
+    if (e instanceof Error && /too many/i.test(e.message)) throw new TooManyCoinsError();
+    throw e;
+  }
   const legacy = p.kind === "p2pkh" || p.kind === "p2sh";
   return Promise.all(
     utxos.map(async (u) => ({
@@ -115,15 +151,21 @@ export async function bitcoinUtxos(p: Extract<Parsed, { chain: "bitcoin" }>, f: 
 }
 
 async function getText(f: Fetch, url: string): Promise<string> {
-  const res = await f(url, { signal: AbortSignal.timeout(TIMEOUT_MS) });
+  const res = await get(f, url);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return (await res.text()).trim();
 }
 
 /** Today's fastest fee rate in sat/vB. */
 export async function bitcoinFastestFee(network: "mainnet" | "testnet", f: Fetch = fetch): Promise<number> {
-  const fees = (await getJson(f, `${ENDPOINTS.bitcoin[network]}/v1/fees/recommended`)) as { fastestFee: number };
-  return fees.fastestFee;
+  try {
+    const fees = (await getJson(f, `${ENDPOINTS.bitcoin[network]}/v1/fees/recommended`)) as { fastestFee: number };
+    return fees.fastestFee;
+  } catch (e) {
+    if (network !== "mainnet") throw e;
+    const est = (await getJson(f, `${BITCOIN_FALLBACK}/fee-estimates`)) as Record<string, number>;
+    return Math.ceil(est["1"] ?? est["2"]);
+  }
 }
 
 /** Has this address ever received or sent anything? A safe address must never have. */
@@ -246,6 +288,8 @@ export async function nearKeys(p: Extract<Parsed, { chain: "near" }>, f: Fetch =
     finality: "final",
     account_id: p.address,
   })) as { keys: { public_key: string; access_key: { permission: unknown } }[] };
+  // A missing account answers with an empty key list, so confirm it exists.
+  if (!r.keys.length) await rpc(f, ENDPOINTS.near[p.network], "query", { request_type: "view_account", finality: "final", account_id: p.address });
   return r.keys.map((k) => ({
     publicKey: k.public_key,
     kind: k.public_key.startsWith("ml-dsa-65") ? "quantum-safe" : "classic",

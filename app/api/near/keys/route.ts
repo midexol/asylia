@@ -17,6 +17,12 @@ export async function GET(req: Request) {
     if (/does not exist|UNKNOWN_ACCOUNT/i.test(msg)) {
       return NextResponse.json({ error: `There is no account called ${p.address} on NEAR ${p.network}.` }, { status: 404 });
     }
+    if (/TOO_MANY|limit/i.test(msg)) {
+      return NextResponse.json(
+        { error: `${p.address} has more than 100 keys, which is more than NEAR will list in one answer. Check its keys with NEAR CLI instead.` },
+        { status: 422 },
+      );
+    }
     return NextResponse.json({ error: "We couldn't reach NEAR just now. Try again in a minute." }, { status: 502 });
   }
 }

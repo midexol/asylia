@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import mainnet from "@/data/canaries.json";
+import { clearWatchCache } from "@/lib/watchman/cache";
 import { GET } from "./route";
 
 /** Fake mempool.space: every canary still, or the first `moved` spent to one address. */
@@ -18,6 +19,7 @@ function mempool(moved = 0) {
 
 describe("GET /api/watch/status", () => {
   afterEach(() => {
+    clearWatchCache();
     vi.unstubAllGlobals();
     vi.unstubAllEnvs();
   });
@@ -49,6 +51,16 @@ describe("GET /api/watch/status", () => {
   it("says so when the network is down", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("down"); }));
     expect((await GET(new Request("http://x/api/watch/status"))).status).toBe(502);
+  });
+
+  it("serves the last good answer while the network is down", async () => {
+    vi.stubGlobal("fetch", mempool(0));
+    await GET(new Request("http://x/api/watch/status"));
+    const down = vi.fn(async () => { throw new Error("down"); });
+    vi.stubGlobal("fetch", down);
+    const res = await GET(new Request("http://x/api/watch/status"));
+    expect(res.status).toBe(200);
+    expect((await res.json()).assessment.level).toBe("calm");
   });
 
   it("has no testnet canaries until the demo sets them up", async () => {

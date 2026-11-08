@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { parseAddress } from "@/lib/address";
 import { buildRescue, FEE_SPEEDS, RescueError, rescueFeeRate, type FeeSpeed } from "@/lib/btc/rescue";
-import { bitcoinEverUsed, bitcoinFastestFee, bitcoinUtxos } from "@/lib/sources";
+import { bitcoinEverUsed, bitcoinFastestFee, bitcoinUtxos, TooManyCoinsError } from "@/lib/sources";
 
 /**
  * POST { from, to, speed } → an unsigned rescue (PSBT) sweeping every coin at `from` to `to`.
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     const plan = buildRescue({ from: from.address, to: to.address, utxos, feeRate: rescueFeeRate(fastest, speed) });
     return NextResponse.json({ plan, fastestToday: fastest, speed });
   } catch (e) {
-    if (e instanceof RescueError) return NextResponse.json({ error: e.message }, { status: 400 });
+    if (e instanceof RescueError || e instanceof TooManyCoinsError) return NextResponse.json({ error: e.message }, { status: 400 });
     return NextResponse.json({ error: "We couldn't reach the Bitcoin network just now. Try again in a minute." }, { status: 502 });
   }
 }

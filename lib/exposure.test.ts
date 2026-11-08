@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { parseAddress } from "./address";
 import { atRiskUsd, chainsFor, judge } from "./exposure";
 import { scan, tidyEvm } from "./scan";
-import { factsFor } from "./sources";
+import { bitcoinUtxos, BITCOIN_FALLBACK, factsFor, TooManyCoinsError } from "./sources";
 
 const P2PKH = parseAddress("1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa");
 const TAPROOT = parseAddress("bc1p0xlxvlhemja6c4dqv22uapctqupfhlxm9h8z3k2e72q4k9hcz7vqzk5jj0");
@@ -120,3 +120,25 @@ describe("sources and scan, with the network faked", () => {
     expect(atRiskUsd(out)).toBe(100_000 + 4000);
   });
 });
+
+describe("Bitcoin lookups when mempool.space refuses", () => {
+  const ADDR = { chain_stats: { funded_txo_sum: 5e8, spent_txo_sum: 1e8, spent_txo_count: 1 }, mempool_stats: { funded_txo_sum: 0, spent_txo_sum: 0, spent_txo_count: 0 } };
+
+  it("retries a rate-limited mainnet read on Blockstream", async () => {
+    const seen: string[] = [];
+    const f = (async (url: string) => {
+      seen.push(url);
+      return url.startsWith(BITCOIN_FALLBACK) ? new Response(JSON.stringify(ADDR)) : new Response("slow down", { status: 429 });
+    }) as unknown as typeof fetch;
+    const facts = await factsFor(P2PKH, "bitcoin", f);
+    expect(facts).toMatchObject({ balance: 4, sentBefore: true });
+    expect(seen).toHaveLength(2);
+  });
+
+  it("says plainly when an address has too many coins to list", async () => {
+    const f = (async () => new Response("Too many unspent transaction outputs (>500).", { status: 400 })) as unknown as typeof fetch;
+    if (P2PKH.chain !== "bitcoin") throw new Error("fixture");
+    await expect(bitcoinUtxos(P2PKH, f)).rejects.toBeInstanceOf(TooManyCoinsError);
+  });
+});
+
