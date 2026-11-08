@@ -41,3 +41,15 @@ jobs:
             case "$u" in //*) u="https:$u";; esac
             echo "FONT $u"; curl -s "$u" | base64 -w0; echo
           done
+      - name: Check the live site end to end
+        if: inputs.task == 'live'
+        env:
+          SITE: https://asylia.vercel.app
+        run: |
+          npm ci
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+          status=0
+          node scripts/live-check.mjs "$SITE" || status=1
+          node scripts/e2e-vault.mjs "$SITE" || status=1
+          exit $status
