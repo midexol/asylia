@@ -13,12 +13,17 @@ const record = (ok, name, detail = "") => {
   results.push({ ok, name, detail });
   console.log(`${ok ? "PASS" : "FAIL"}  ${name}${detail ? `  (${detail})` : ""}`);
 };
+let page = null;
 const check = async (name, fn) => {
   try {
     const d = await fn();
     record(true, name, d ?? "");
   } catch (e) {
-    record(false, name, e instanceof Error ? e.message : String(e));
+    record(false, name, e instanceof Error ? e.message.split("\n")[0] : String(e));
+    if (name.startsWith("Browser") && page) {
+      const text = await page.evaluate(() => document.querySelector("main")?.innerText ?? "").catch(() => "");
+      console.log(`      on ${page.url()}: ${text.replace(/\s+/g, " ").slice(0, 900)}`);
+    }
   }
 };
 const expect = (cond, msg) => { if (!cond) throw new Error(msg); };
@@ -153,7 +158,7 @@ await check("POST /api/vault/seal: garbage is refused", async () => {
 
 // ---------- Real browser ----------
 const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 const consoleErrors = [];
 const badResponses = [];
 page.on("console", (m) => { if (m.type() === "error") consoleErrors.push(`${page.url()}: ${m.text()}`); });

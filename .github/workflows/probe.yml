@@ -49,6 +49,9 @@ jobs:
           npm ci
           npm install --no-save playwright@1.56.1
           npx playwright install --with-deps chromium
+          q='{"jsonrpc":"2.0","id":1,"method":"query","params":{"request_type":"view_access_key_list","finality":"final","account_id":"near"}}'
+          for u in https://rpc.mainnet.near.org https://free.rpc.fastnear.com https://rpc.mainnet.fastnear.com; do echo "RPC $u"; curl -s -m 10 -w " HTTP %{http_code}" -X POST $u -H 'content-type: application/json' -d "$q" | cut -c1-200; echo; done
+          echo "UTXO"; curl -s -m 15 -w " HTTP %{http_code}" https://mempool.space/api/address/34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo/utxo | cut -c1-200; echo
           status=0
           node scripts/live-check.mjs "$SITE" || status=1
           node scripts/e2e-vault.mjs "$SITE" || status=1
