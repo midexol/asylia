@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+
+export const maxDuration = 60;
 import { parseAddress } from "@/lib/address";
 import { buildRescue, FEE_SPEEDS, RescueError, rescueFeeRate, type FeeSpeed } from "@/lib/btc/rescue";
 import { bitcoinEverUsed, bitcoinFastestFee, bitcoinUtxos, TooManyCoinsError } from "@/lib/sources";

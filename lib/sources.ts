@@ -20,8 +20,8 @@ const TIMEOUT_MS = 8000;
 // mainnet read that is refused or times out is retried there once.
 export const BITCOIN_FALLBACK = "https://blockstream.info/api";
 
-async function get(f: Fetch, url: string, init?: RequestInit): Promise<Response> {
-  const once = (u: string) => f(u, { ...init, signal: AbortSignal.timeout(TIMEOUT_MS) });
+async function get(f: Fetch, url: string, init?: RequestInit, timeoutMs = TIMEOUT_MS): Promise<Response> {
+  const once = (u: string) => f(u, { ...init, signal: AbortSignal.timeout(timeoutMs) });
   const fallback = url.startsWith(ENDPOINTS.bitcoin.mainnet + "/") && !url.includes("/v1/")
     ? url.replace(ENDPOINTS.bitcoin.mainnet, BITCOIN_FALLBACK)
     : null;
@@ -36,8 +36,8 @@ async function get(f: Fetch, url: string, init?: RequestInit): Promise<Response>
   return res;
 }
 
-async function getJson(f: Fetch, url: string, init?: RequestInit): Promise<unknown> {
-  const res = await get(f, url, init);
+async function getJson(f: Fetch, url: string, init?: RequestInit, timeoutMs = TIMEOUT_MS): Promise<unknown> {
+  const res = await get(f, url, init, timeoutMs);
   if (!res.ok) {
     const detail = (await res.text().catch(() => "")).trim().slice(0, 160);
     throw new Error(detail ? `HTTP ${res.status}: ${detail}` : `HTTP ${res.status}`);
@@ -134,7 +134,8 @@ export async function bitcoinUtxos(p: Extract<Parsed, { chain: "bitcoin" }>, f: 
   const base = ENDPOINTS.bitcoin[p.network];
   let utxos: BtcUtxo[];
   try {
-    utxos = (await getJson(f, `${base}/address/${p.address}/utxo`)) as BtcUtxo[];
+    // Busy wallets can take a while to list, so this one lookup gets longer.
+    utxos = (await getJson(f, `${base}/address/${p.address}/utxo`, undefined, 20_000)) as BtcUtxo[];
   } catch (e) {
     if (e instanceof Error && /too many|history entries/i.test(e.message)) throw new TooManyCoinsError();
     throw e;
