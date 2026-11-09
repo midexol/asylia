@@ -260,6 +260,33 @@ await browser.close();
 await check("Browser: no console errors", async () => { expect(!consoleErrors.length, consoleErrors.slice(0, 5).join(" | ")); });
 await check("Browser: no failed requests to the site", async () => { expect(!badResponses.length, badResponses.slice(0, 5).join(" | ")); });
 
+// ---------- Security ----------
+await check("Security headers on every page", async () => {
+  const res = await fetch(SITE + "/");
+  const h = (k) => res.headers.get(k) ?? "";
+  expect(/frame-ancestors 'none'/.test(h("content-security-policy")), "no CSP with frame-ancestors");
+  expect(/default-src 'self'/.test(h("content-security-policy")), "CSP default-src is not self");
+  expect(h("strict-transport-security").includes("max-age="), "no HSTS");
+  expect(h("x-frame-options") === "DENY", "framing allowed");
+  expect(h("x-content-type-options") === "nosniff", "no nosniff");
+  expect(!res.headers.has("x-powered-by"), "x-powered-by leaks the framework");
+  return "CSP, HSTS, DENY, nosniff, no x-powered-by";
+});
+await check("Oversized request is refused with 413", async () => {
+  const r = await post("/api/scan", { text: "a".repeat(40_000) });
+  expect(r.status === 413, `HTTP ${r.status}`);
+});
+await check("Rate limit: a flood of scans gets 429 with Retry-After", async () => {
+  let first429 = 0, retry = "";
+  for (let i = 1; i <= 30; i++) {
+    const res = await fetch(SITE + "/api/scan", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text: "x" }) });
+    if (res.status === 429) { first429 = i; retry = res.headers.get("retry-after") ?? ""; break; }
+  }
+  expect(first429 > 0, "30 requests in a row were all allowed");
+  expect(Number(retry) > 0, "no Retry-After header");
+  return `blocked at request ${first429}, retry after ${retry}s`;
+});
+
 const failed = results.filter((r) => !r.ok);
 const summary = [`## Live check of ${SITE}`, "", `${results.length - failed.length} of ${results.length} passed`, "",
   ...results.map((r) => `- ${r.ok ? "PASS" : "FAIL"} ${r.name}${r.detail ? `: ${r.detail}` : ""}`)].join("\n");
