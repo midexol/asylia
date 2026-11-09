@@ -3,7 +3,7 @@
 import type { Assessment, Opinion } from "./detect";
 
 export const NEARAI_URL = "https://cloud-api.near.ai/v1/chat/completions";
-export const DEFAULT_MODEL = "zai-org/GLM-5.1-FP8";
+export const DEFAULT_MODEL = "z-ai/glm-5.3-flash";
 
 const SYSTEM = `You watch dormant 2009 Bitcoin block rewards whose public keys are exposed. If a quantum computer
 can derive private keys, these coins move first. Decide whether the recent moves look like an attack.
@@ -38,8 +38,36 @@ export function parseOpinion(text: string, model: string): Opinion | null {
   }
 }
 
+// The same evidence gets the same answer for 10 minutes, so a demo clicked over and over
+// costs one call, and a key with no credit isn't retried on every page load.
+const ASK_EVERY_MS = 10 * 60_000;
+const answers = new Map<string, { at: number; opinion: Opinion | null }>();
+
+/** For tests: forget remembered answers. */
+export function clearJudgeCache() {
+  answers.clear();
+}
+
+/** Whether a second opinion can be asked for at all on this deployment. */
+export const judgeConfigured = (env: Record<string, string | undefined> = process.env) => !!env.NEARAI_API_KEY?.trim();
+
 /** Ask only when the rules have raised an alarm; calm and watch levels need no opinion. */
 export async function judge(
+  a: Assessment,
+  env: Record<string, string | undefined> = process.env,
+  f: typeof fetch = fetch,
+): Promise<Opinion | null> {
+  if (a.level !== "alarm" && a.level !== "release") return null;
+  if (!env.NEARAI_API_KEY?.trim()) return null;
+  const k = JSON.stringify(evidence(a));
+  const hit = answers.get(k);
+  if (hit && Date.now() - hit.at < ASK_EVERY_MS) return hit.opinion;
+  const opinion = await ask(a, env, f);
+  answers.set(k, { at: Date.now(), opinion });
+  return opinion;
+}
+
+async function ask(
   a: Assessment,
   env: Record<string, string | undefined> = process.env,
   f: typeof fetch = fetch,

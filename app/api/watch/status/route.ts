@@ -3,7 +3,7 @@ import mainnet from "@/data/canaries.json";
 import testnet from "@/data/canaries-testnet.json";
 import { assess, decide, type Canary, type CanaryState } from "@/lib/watchman/detect";
 import { FRESH_MS, lastGood, STALE_MS } from "@/lib/watchman/cache";
-import { judge } from "@/lib/watchman/judge";
+import { judge, judgeConfigured } from "@/lib/watchman/judge";
 import { canaryStates } from "@/lib/sources";
 
 export const revalidate = 60;
@@ -60,6 +60,8 @@ export async function GET(req: Request) {
     tip,
     assessment,
     opinion,
+    // "off": no NEAR AI Cloud key on this deployment; "no-answer": asked, but no usable reply.
+    ai: opinion ? "answered" : assessment.level === "alarm" || assessment.level === "release" ? (judgeConfigured() ? "no-answer" : "off") : "not-needed",
     decision: simulate > 0 ? { ...decision, release: false, wouldRelease: decision.release } : decision,
     canaries: canaries.map((c) => ({ ...c, spent: states.find((s) => s.id === c.id)?.spent ?? false })),
   });

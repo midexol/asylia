@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { assess, decide, type Canary, type CanaryState } from "./detect";
-import { evidence, judge, parseOpinion } from "./judge";
+import { clearJudgeCache, evidence, judge, parseOpinion } from "./judge";
 
 const canaries: Canary[] = Array.from({ length: 20 }, (_, i) => ({ id: `t${i}:0`, txid: `t${i}`, vout: 0, sats: 50e8, height: i + 1 }));
 const TIP = 900_000;
@@ -74,6 +74,7 @@ describe("judge", () => {
   });
 
   it("asks NEAR AI Cloud only on an alarm, and only with a key", async () => {
+    clearJudgeCache();
     let calls = 0;
     const f = (async () => {
       calls++;
@@ -85,7 +86,20 @@ describe("judge", () => {
     expect(await judge(alarm, { NEARAI_API_KEY: "k" }, f)).toMatchObject({ attack: true, confidence: 0.85 });
   });
 
+  it("asks once for the same evidence, then reuses the answer", async () => {
+    clearJudgeCache();
+    let calls = 0;
+    const f = (async () => {
+      calls++;
+      return new Response(JSON.stringify({ choices: [{ message: { content: '{"attack":true,"confidence":0.9,"reason":"Same."}' } }] }));
+    }) as unknown as typeof fetch;
+    await judge(alarm, { NEARAI_API_KEY: "k" }, f);
+    await judge(alarm, { NEARAI_API_KEY: "k" }, f);
+    expect(calls).toBe(1);
+  });
+
   it("gives up quietly when NEAR AI Cloud fails", async () => {
+    clearJudgeCache();
     const f = (async () => new Response("", { status: 500 })) as unknown as typeof fetch;
     expect(await judge(alarm, { NEARAI_API_KEY: "k" }, f)).toBeNull();
   });

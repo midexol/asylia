@@ -14,6 +14,7 @@ interface Status {
   tip: number;
   assessment: Assessment;
   opinion: Opinion | null;
+  ai?: "answered" | "no-answer" | "off" | "not-needed";
   decision: Decision & { wouldRelease?: boolean };
   canaries: { id: string; height?: number; sats: number; spent: boolean }[];
   error?: string;
@@ -91,7 +92,7 @@ export function Watch() {
               <div><dt>Canaries watched</dt><dd>{a.watched}, holding {btcWatched.toLocaleString("en-US")} BTC</dd></div>
               <div><dt>Moved in the last day</dt><dd>{a.recent.length}</dd></div>
               <div><dt>Moved to the same place</dt><dd>{a.sharedDestinations === 0 ? "None" : `${a.sharedDestinations} shared destination${a.sharedDestinations > 1 ? "s" : ""}`}</dd></div>
-              <div><dt>Judgement</dt><dd>{status.opinion ? `${status.opinion.attack ? "Attack" : "Not an attack"} (${Math.round(status.opinion.confidence * 100)}% sure): ${status.opinion.reason}` : a.level === "calm" || a.level === "watch" ? "Not needed while things are calm." : "Waiting for NEAR AI Cloud."}</dd></div>
+              <div><dt>Judgement</dt><dd>{status.opinion ? `${status.opinion.attack ? "Attack" : "Not an attack"} (${Math.round(status.opinion.confidence * 100)}% sure): ${status.opinion.reason}` : a.level === "calm" || a.level === "watch" ? "Not needed while things are calm." : status.ai === "off" ? "NEAR AI Cloud isn't switched on for this site, so the rules decide alone." : status.ai === "no-answer" ? "NEAR AI Cloud didn't answer, so the rules decide alone." : "Waiting for NEAR AI Cloud."}</dd></div>
               <div><dt>Escapes</dt><dd>{status.simulated ? (status.decision.wouldRelease ? "Would be released now" : "Would stay sealed") : status.decision.release ? "Released" : "Sealed"}</dd></div>
               <div><dt>Last check</dt><dd>{new Date(status.checkedAt).toLocaleTimeString()} at block {status.tip.toLocaleString("en-US")}</dd></div>
             </dl>
