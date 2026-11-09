@@ -59,6 +59,7 @@ jobs:
           status=0
           node scripts/live-check.mjs "$SITE" || status=1
           node scripts/e2e-vault.mjs "$SITE" || status=1
+          node scripts/assayer-csp-check.mjs || status=1
           echo "ASSAYER headers"; curl -sI https://assayer-gray.vercel.app/ | grep -iE "content-security|x-frame|strict-transport|x-powered" | cut -c1-90
           echo "ASSAYER limit"; for i in $(seq 1 35); do curl -s -o /dev/null -w "%{http_code} " -X POST https://assayer-gray.vercel.app/api/v1/best-venue -H 'content-type: application/json' -d '{"ticker":"NVDA","size_usd":1000,"preview":true}'; done; echo
           exit $status
