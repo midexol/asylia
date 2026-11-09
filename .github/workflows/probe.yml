@@ -8,6 +8,10 @@ on:
         description: "canaries"
         default: canaries
 
+# Least privilege: these jobs only read the repository.
+permissions:
+  contents: read
+
 jobs:
   probe:
     runs-on: ubuntu-latest

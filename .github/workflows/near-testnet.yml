@@ -9,6 +9,10 @@ on:
         description: "Also delete the classic Ed25519 key (type yes)"
         default: "no"
 
+# Least privilege: these jobs only read the repository.
+permissions:
+  contents: read
+
 jobs:
   upgrade:
     runs-on: ubuntu-latest

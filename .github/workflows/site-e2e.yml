@@ -5,6 +5,10 @@ name: Site end-to-end
 on:
   workflow_dispatch:
 
+# Least privilege: these jobs only read the repository.
+permissions:
+  contents: read
+
 jobs:
   e2e:
     runs-on: ubuntu-latest
