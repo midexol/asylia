@@ -1,3 +1,4 @@
+import "server-only";
 // Server-side: run the vault once on OutLayer testnet through request_execution, paying from
 // the Asylia testnet account (derived from NEAR_TESTNET_SEED, as scripts/testnet-account.mjs does).
 // Only ever sees sealed (encrypted) escapes.

@@ -1,3 +1,4 @@
+import "server-only";
 // A second opinion from a model on NEAR AI Cloud (OpenAI-compatible). It reads the recent
 // canary moves and says whether they look like an attack or like an owner moving their coins.
 import type { Assessment, Opinion } from "./detect";
