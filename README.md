@@ -1,8 +1,10 @@
 # Asylia
 
-*Asylia* is Greek for inviolability: protection from seizure. The project was built under the working name Lifeboat, so the repository, the live site address, the testnet account (`lifeboat-f86cd6e7d4.testnet`) and the vault's encryption labels still say `lifeboat`.
-
 Asylia gets your crypto out before a quantum computer can steal it, without ever holding your coins.
+
+**Live:** [asylia.vercel.app](https://asylia.vercel.app) · **Code:** [github.com/midexol/asylia](https://github.com/midexol/asylia)
+
+*Asylia* is Greek for inviolability: protection from seizure. It was built under the working name Lifeboat, so the testnet account (`lifeboat-f86cd6e7d4.testnet`), the vault's name and its encryption labels still say `lifeboat`.
 
 A large enough quantum computer can work out a wallet's private key from its public key, and millions of wallets have already published theirs. Asylia does four things:
 
@@ -30,12 +32,12 @@ Each of these is reproducible from the workflows in [`.github/workflows`](.githu
 
 ## Try it
 
-Needs Node 22.
+Open [asylia.vercel.app](https://asylia.vercel.app): nothing to install, no sign-in, no keys. Or run it locally (needs Node 22):
 
 ```bash
-git clone https://github.com/midexol/lifeboat && cd lifeboat
+git clone https://github.com/midexol/asylia && cd asylia
 npm install
-npm test        # 87 tests, all offline
+npm test        # 96 tests, all offline
 npm run dev     # http://localhost:3000
 ```
 
@@ -169,6 +171,7 @@ Anything not listed as built is not claimed.
 | Upgrade NEAR: ML-DSA-65 key added and used on chain | Done on testnet ([proof above](#proof-on-chain-near-testnet)) |
 | Upgrade NEAR screen: live key check, CLI commands, on-chain confirmation | Built. Checked live against the testnet account |
 | Watchman: 60 canaries, rules, NEAR AI Cloud second opinion, labelled simulated attack | Built and tested. Checked live against mainnet |
+| Security: per-visitor rate limits on every API route, body-size caps, strict security headers, secrets kept server-side | Built. Checked live by `scripts/live-check.mjs` |
 | A full simulated attack on testnet, in which canary coins we control move and the vault broadcasts a real testnet escape | Not built yet |
 
 ## Limits
@@ -182,6 +185,13 @@ Anything not listed as built is not claimed.
 - **The scanner can't see bare-public-key (P2PK) Bitcoin outputs** under their derived address. A 2009-style P2PK holding can show "Safe for now".
 - **Address types:** Taproot escapes build but are untested with a real Taproot wallet. Multisig and Solana are not supported.
 
+## Security
+
+- **Rate limits:** every API route has a per-visitor limit, checked in [`middleware.ts`](middleware.ts) before the route runs. The vault seal is the tightest (3 a minute, 15 an hour), because each seal spends testnet gas. Over the limit, the answer is 429 with `Retry-After`. Oversized requests get 413.
+- **Headers:** a strict Content-Security-Policy (scripts only from this site, no framing), HSTS, `nosniff`, `no-referrer` so addresses never leak to other sites, and a locked-down Permissions-Policy. See [`next.config.ts`](next.config.ts).
+- **Secrets:** `NEAR_TESTNET_SEED` and `NEARAI_API_KEY` are read only in modules that import `server-only`, so the build fails if either is ever pulled into the browser. They live in Vercel and GitHub secrets, never in the repo.
+- **Live check:** [`scripts/live-check.mjs`](scripts/live-check.mjs) tests every page, API route and screen of the deployed site in a real browser, including the limits and headers. Run it from the `Probe` workflow with `task=live`.
+
 ## Run it yourself
 
 | Variable | Needed for |
@@ -191,6 +201,28 @@ Anything not listed as built is not claimed.
 | `NEARAI_API_KEY` (optional) | The watchman's NEAR AI Cloud judgement on an alarm. `NEARAI_MODEL` is also optional. |
 
 The product name lives only in [`lib/brand.ts`](lib/brand.ts).
+
+## Built during the hackathon
+
+Everything in this repository was written during NEAR HACKATHON (1 to 14 November 2026). There is no earlier code: the first commit, [`7cde737`](https://github.com/midexol/asylia/commit/7cde737), is from 4 November 2026.
+
+- Full history: [commits on `main`](https://github.com/midexol/asylia/commits/main)
+- Everything after the first commit: [diff `7cde737...hackathon-submission`](https://github.com/midexol/asylia/compare/7cde737...hackathon-submission)
+- The tag `hackathon-submission` marks the code as submitted.
+
+**Existing products:** none. Asylia is not a port of a product on another chain. It reads Bitcoin, Ethereum and BNB Chain data to find exposed wallets, and runs its vault, key upgrade and AI judgement on NEAR.
+
+## Libraries, services and AI-generated code
+
+**Template:** the app started from `create-next-app` (Next.js 15, App Router, TypeScript).
+
+**Libraries (JavaScript):** Next.js and React; `bitcoinjs-lib`, `@bitcoinerlab/secp256k1` and `ecpair` for Bitcoin transactions; `viem` for Ethereum and BNB Chain; `@noble/ciphers`, `@noble/curves`, `@noble/hashes` and `@scure/base` for the browser-side encryption; `@fastnear/api`, `@fastnear/utils` and `@fastnear/ml-dsa-65` for NEAR and the ML-DSA-65 key; `server-only`; Vitest and ESLint for tests and linting.
+
+**Libraries (Rust, the vault):** `outlayer`, `x25519-dalek`, `chacha20poly1305`, `hkdf`, `sha2`, `serde`, `serde_json`, `base64`, `wasi-http-client` and `getrandom`.
+
+**Services:** mempool.space and Blockstream (Bitcoin data), publicnode.com (Ethereum and BNB Chain RPC), NEAR RPC, CoinGecko (prices), OutLayer (the enclave), NEAR AI Cloud (the second opinion), Fontshare and Google Fonts (type).
+
+**AI-generated code:** much of the code, tests and documentation was written with Claude, Anthropic's AI assistant, working under the entrant's direction. The entrant chose the product, the design and every trade-off, and reviewed and tested the result. The on-chain proofs above were run from this repository's workflows.
 
 ## Repo map
 
