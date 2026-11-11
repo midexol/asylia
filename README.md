@@ -62,7 +62,7 @@ None of this needs keys or environment variables, except sealing into the vault 
   - checks the canaries itself, and broadcasts escapes itself only when its rule says so.
 
   It is called through `request_execution` on `outlayer.testnet`.
-- **NEAR AI Cloud.** When three or more canaries move in a day, the watchman asks a model on NEAR AI Cloud whether the moves look like an attack ([`lib/watchman/judge.ts`](lib/watchman/judge.ts)). The model sees counts and fees, never addresses. It can confirm an alarm, but it can't start one or block a release.
+- **NEAR AI Cloud (optional, off in the live demo).** When three or more canaries move in a day, the watchman asks a model on NEAR AI Cloud whether the moves look like an attack ([`lib/watchman/judge.ts`](lib/watchman/judge.ts)). The model sees counts and fees, never addresses. It can confirm an alarm, but it can't start one or block a release.
 - **Why not Chain Signatures?** NEAR's MPC network signs with classical keys and has no post-quantum timeline yet. Asylia therefore never takes custody of coins.
 
 ## Why each track
@@ -141,7 +141,7 @@ The canaries are the block rewards from Bitcoin blocks 1 to 61, mined in January
 How it decides:
 
 1. **One moves in a day:** watch closely.
-2. **Three move in a day:** alarm, and ask NEAR AI Cloud. A "yes" with at least 70% confidence releases.
+2. **Three move in a day:** alarm, and, if a NEAR AI Cloud key is set, ask it. A "yes" with at least 70% confidence releases.
 3. **Eight move in a day:** release, whatever the judgement says.
 
 Code: [`lib/watchman`](lib/watchman), [`components/Watch.tsx`](components/Watch.tsx).
@@ -170,7 +170,7 @@ Anything not listed as built is not claimed.
 | Sealing into the vault from the website | Built. Run end to end on testnet |
 | Upgrade NEAR: ML-DSA-65 key added and used on chain | Done on testnet ([proof above](#proof-on-chain-near-testnet)) |
 | Upgrade NEAR screen: live key check, CLI commands, on-chain confirmation | Built. Checked live against the testnet account |
-| Watchman: 60 canaries, rules, NEAR AI Cloud second opinion, labelled simulated attack | Built and tested. Checked live against mainnet |
+| Watchman: 60 canaries, rules, optional NEAR AI Cloud second opinion, labelled simulated attack | Built and tested. Checked live against mainnet |
 | Security: per-visitor rate limits on every API route, body-size caps, strict security headers, secrets kept server-side | Built. Checked live by `scripts/live-check.mjs` |
 | A full simulated attack on testnet, in which canary coins we control move and the vault broadcasts a real testnet escape | Not built yet |
 
@@ -220,7 +220,7 @@ Everything in this repository was written during NEAR HACKATHON (1 to 14 Novembe
 
 **Libraries (Rust, the vault):** `outlayer`, `x25519-dalek`, `chacha20poly1305`, `hkdf`, `sha2`, `serde`, `serde_json`, `base64`, `wasi-http-client` and `getrandom`.
 
-**Services:** mempool.space and Blockstream (Bitcoin data), publicnode.com (Ethereum and BNB Chain RPC), NEAR RPC, CoinGecko (prices), OutLayer (the enclave), NEAR AI Cloud (the second opinion), Fontshare and Google Fonts (type).
+**Services:** mempool.space and Blockstream (Bitcoin data), publicnode.com (Ethereum and BNB Chain RPC), NEAR RPC, CoinGecko (prices), OutLayer (the enclave), NEAR AI Cloud (optional second opinion, off in the live demo), Fontshare and Google Fonts (type).
 
 **AI-generated code:** much of the code, tests and documentation was written with Claude, Anthropic's AI assistant, working under the entrant's direction. The entrant chose the product, the design and every trade-off, and reviewed and tested the result. The on-chain proofs above were run from this repository's workflows.
 
