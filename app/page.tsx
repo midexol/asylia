@@ -5,7 +5,7 @@ import { LiveWatch } from "@/components/LiveWatch";
 import { Mark } from "@/components/Mark";
 import { Paint } from "@/components/Paint";
 import { Scramble } from "@/components/Scramble";
-import { NAME, REPO, SISTER } from "@/lib/brand";
+import { NAME, REPO } from "@/lib/brand";
 
 const STEPS = [
   ["Scan your wallets", `Paste your Bitcoin, Ethereum, BNB Chain or NEAR addresses. ${NAME} checks the blockchain and tells you which ones have a public key a quantum computer could use, and how much is in them.`],
@@ -143,7 +143,7 @@ export default function Landing() {
         </div>
         <footer className="footer">
           <span>
-            {NAME}, built at NEAR HACKATHON, November 2026. Sister project: <a href={SISTER.url}>{SISTER.name}</a>.
+            {NAME}, built at NEAR HACKATHON, November 2026.
           </span>
           <a href={REPO}>Source on GitHub</a>
         </footer>

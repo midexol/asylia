@@ -15,7 +15,7 @@ A large enough quantum computer can work out a wallet's private key from its pub
 
 Built at [NEAR HACKATHON](https://nearhackathon.com), November 2026. **Tracks:** `security`, `privacy`, `open`.
 
-**Other project by the same entrant:** [Assayer](https://github.com/midexol/assayer), which measures tokenized-stock prices across chains. The two projects are independent and share no code.
+**Other project by the same entrant:** Assayer (a separate repository), which measures tokenized-stock prices across chains. The two projects are independent and share no code.
 
 ## Proof on chain (NEAR testnet)
 
